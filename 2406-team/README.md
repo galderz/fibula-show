@@ -123,11 +123,24 @@ generate bytecode just like JMH generates source code for the generated benchmar
 generate native executables out of that bytecode and some glue code,
 and voilá, I would have run JMH benchmarks as native executables.
 
-We can instruct Fibula 
+The bytecode is generated just like any other Quarkus use cases.
+For this use case, this can be found in
+`fibula/target/decompiled/generated-bytecode/org/sample/jmh_generated/MyFirstBenchmark_helloWorld_jmhTest_helloWorld_Throughput_Function.java`.
 
+The equivalent for JMH can be found in
+`./jmh/target/generated-sources/annotations/org/sample/jmh_generated/MyFirstBenchmark_helloWorld_jmhTest.java`
+
+Why does Fibula show a `fori` loop?
+Technically Fibula instructs Gizmo to create a while loop,
+but this is transformed into a `fori` loop.
+Needs further investigation.
+
+# Why The Difference In Performance?
 
 ...
 
-In short:
-Fibula is a combination of two quarkus microservices that enable JMH benchmarks to execute when running as GraalVM native executables,
-reusing as much as JMH API as possible.
+# Summary
+
+Fibula is the combination of two Quarkus microservices
+, that allows you to JMH benchmarks as GraalVM native executables
+, reusing as much as of JMH as possible.
