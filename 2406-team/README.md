@@ -1,31 +1,39 @@
-todo: adjust running times to be long enough to see differences
-
-RECORD!!!
-
 # Before
 
 One shell:
-maven-21
+```shell
+export JAVA_HOME=$HOME/1/jdk21u-dev/build/release-linux-x86_64/jdk
+maven-java
 cd jmh
 mvn clean package -DskipTests
+```
 
 Another shell:
+```shell
 graal-21
 cd fibula
-mvn clean package -DskipTests -Pnative -Dquarkus.package.decompiler.enabled=true
-^ todo consider building it already with debug info et al
+mvn clean package -DskipTests -Pnative -Dquarkus.package.jar.decompiler.enabled=true -Dquarkus.native.debug.enabled -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols,-J--add-exports=jdk.internal.vm.compiler/org.graalvm.compiler.api.directives=ALL-UNNAMED
+```
+
+# Record
+
+Press record!
 
 # First JMH benchmark
 
-jmh folder:
-java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 10 -w 10
+From the `jmh` folder:
+```shell
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1
+```
 
-Note: VM version, VM invoker
+Note to audience: VM version, VM invoker
 
 # First Fibula benchmark
 
-fibula folder:
-java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 10 -w 10
+From the `fibula` folder:
+```shell
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1
+```
 
 # Dig Deeper
 
@@ -137,10 +145,208 @@ Needs further investigation.
 
 # Why The Difference In Performance?
 
-...
+Use profiling to understand the differences in performance.
+
+Start with the `perf` profiler
+, which runs the forked execution via `perf stat`.
+
+From the `jmh` folder:
+```shell
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perf
+```
+
+The `perf stat` output values might not very precise due to multiplexing.
+Multiplexing happens when multiple counters are tracked with a single hardware counter.
+To avoid this, let's limit track `perf` stats to `branches` and `instructions`:
+
+From the `jmh` folder:
+```shell
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perf:events=branches,instructions
+```
+
+We have got some branch and instructions numbers.
+Let's try to compare them with Fibula.
+
+From the `fibula` folder:
+```shell
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perf:events=branches,instructions
+```
+
+JMH shows more branches and more instructions
+, but the number of operations executed is higher
+. It's hard to see the issue from just looking at this data.
+
+To find more meaningful data
+, normalize the counters to the number of operations executed
+. JMH has the `perfnorm` profiler that does exactly that.
+
+From the `jmh` folder:
+```shell
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perfnorm:events=branches,instructions
+```
+
+1 branch, 6 instructions per operation.
+
+From the `fibula` folder:
+```shell
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perfnorm:events=branches,instructions
+```
+
+3 branches, 8 instructions per operation.
+
+More branching and more instructions is the reason why SubstrateVM performs worse than HotSpot
+, but what are these additional branches and instructions?
+`perfasm` is an additional JMH profiler than help uncover this mistery:
+
+From the `jmh` folder:
+```shell
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perfasm
+```
+
+1 branch and 6 instructions clearly visible in the output
+. The branch is just the check of `isDone` to see if we have gone past the benchmark running time:
+```shell
+          ↗  0x00007f77f8c51160:   movzbl		0x94(%r13), %r10d   ;*getfield isDone {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - org.sample.jmh_generated.MyFirstBenchmark_helloWorld_jmhTest::helloWorld_thrpt_jmhStub@25 (line 123)
+          │  0x00007f77f8c51168:   movq		0x458(%r15), %r8
+  23.65%  │  0x00007f77f8c5116f:   addq		$1, %r11            ; ImmutableOopMap {r9=Oop rbx=Oop r13=Oop }
+          │                                                            ;*ifeq {reexecute=1 rethrow=0 return_oop=0}
+          │                                                            ; - (reexecute) org.sample.jmh_generated.MyFirstBenchmark_helloWorld_jmhTest::helloWorld_thrpt_jmhStub@28 (line 123)
+          │  0x00007f77f8c51173:   testl		%eax, (%r8)         ;   {poll}
+  65.31%  │  0x00007f77f8c51176:   testl		%r10d, %r10d
+          ╰  0x00007f77f8c51179:   je		0x7f77f8c51160      ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - org.sample.jmh_generated.MyFirstBenchmark_helloWorld_jmhTest::helloWorld_thrpt_jmhStub@28 (line 123)
+```
+
+Something similar can be achieved with Fibula
+, but we need to make some minor command line and tooling changes:
+
+* Instead of the default `perfasm`
+, use a profiler that invokes the `perf record` command just like `perfasm` does
+, but add a DWARF callgraph
+. That is what the `org.mendrugo.fibula.bootstrap.DwarfPerfAsmProfiler` does.
+* Skip the ASM part because there's no integration for that yet with Fibula.
+* `perf annotate` will provide something like the `perfasm` output
+, but to be able to run it, instruct JMH to save the `perf.bin` file.
+* Switch from tracking `cycles` event to tracking `cycles:P`.
+The additional `:P` increases the precision of `perf record` by avoiding skidding problems.
+
+From the `fibula` folder:
+```shell
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof org.mendrugo.fibula.bootstrap.DwarfPerfAsmProfiler:events=cycles:P\;skipAsm=true\;savePerfBin=true
+```
+
+Now run `perf annotate`:
+```shell
+
+```
+
+The `cmpb+jne` and the `jmp` at the end are the 2 branches for the `isDone` check:
+
+```shell
+  8.87 │90:┌──cmpb       $0x0,0xc(%rsi)
+  8.49 │   ├──jne        b0
+  8.61 │   │  mov        %rax,%rcx
+ 16.68 │   │  inc        %rcx
+  7.46 │   │  subl       $0x1,0x10(%r15)
+ 16.45 │   │↓ jle        d9
+ 17.27 │   │  mov        %rcx,%rax
+ 16.16 │   │↑ jmp        90
+       │b0:└─→mov        %rax,0x20(%rsp)
+```
+
+```shell
+  8.87 │90:┌─→cmpb       $0x0,0xc(%rsi)
+  8.49 │   │↓ jne        b0
+  8.61 │   │  mov        %rax,%rcx
+ 16.68 │   │  inc        %rcx
+  7.46 │   │  subl       $0x1,0x10(%r15)
+ 16.45 │   │↓ jle        d9
+ 17.27 │   │  mov        %rcx,%rax
+ 16.16 │   └──jmp        90
+```
+
+The additional 3rd branch is the `subl+jle` for the safepoint checks:
+
+```shell
+  8.87 │90:   cmpb       $0x0,0xc(%rsi)
+  8.49 │    ↓ jne        b0
+  8.61 │      mov        %rax,%rcx
+ 16.68 │      inc        %rcx
+  7.46 │      subl       $0x1,0x10(%r15)
+ 16.45 │   ┌──jle        d9
+ 17.27 │   │  mov        %rcx,%rax
+ 16.16 │   │↑ jmp        90
+       │b0:│  mov        %rax,0x20(%rsp)
+       │   │↑ jmp        53
+       │b7:│  mov        0x20(%rsp),%rax
+       │   │  nop
+       │   │→ call       _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv
+       │   │  nop
+       │   │↑ jmp        79
+       │c8:│  mov        %r8,0x10(%rsp)
+       │   │→ call       _ZN57com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl26throwNewStackOverflowErrorEJvv
+       │   │  nop
+       │d3:│→ call       _ZN47com.oracle.svm.core.snippets.ImplicitExceptions28throwNewNullPointerExceptionEJvv
+       │   │  nop
+       │d9:└─→mov        0x10(%rsp),%r8
+       │      xchg       %ax,%ax
+       │    → call       _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv
+
+```
+
+This is a very contrived example
+, but it gives an idea on what the type of assembly SubstrateVM generates compared to HotSpot.
+
+In other examples I've run I've not seen differences between SubstrateVM and HotSpot
+, so the noise we see here might not be so relevant.
+
+In any case
+, some interesting observations can be made:
+
+* Safepoint checks are not as fancy in SubstrateVM as in HotSpot
+, where instead of littering the code with branches
+, it [uses good/bad pages to avoid the branches](https://foojay.io/today/the-inner-workings-of-safepoints/).
+* The `inc` and related 2 `mov` instructions should be dead-code-eliminated since its value not used.
+* 1 conditional + 1 unconditional branch for the loop
+, while it could be done with just 1 branch.
+
+# Fibula Outings
+
+Some real life examples using Fibula:
+
+* Records equals/hashCode performance.
+Initially performance was very bad when records support came out in SubstrateVM.
+Christian improved the performance with this [PR](https://github.com/oracle/graal/pull/8109).
+A JMH benchmark running with Fibula was able to confirm that the performance had improved significantly:
+
+```shell
+Benchmark                                  Mode  Cnt          Score         Error  Units
+equalsPositions   GraalVM 24.0.0          thrpt    4  114064530.931 ±  303317.241  ops/s
+hashcodePosition  GraalVM 24.0.0          thrpt    4  262827839.960 ± 4187526.946  ops/s
+equalsPositions   GraalVM 23.1.0          thrpt    4     117738.738 ±    1891.331  ops/s
+hashcodePosition  GraalVM 23.1.0          thrpt    4     292367.045 ±    6803.486  ops/s
+```
+
+* [Franz wanted to know if calling `Thread.isVirtual` via method handle instead of direct call would cause a regression in Substrate]
+(https://github.com/quarkusio/quarkus/pull/39704/files#r1547368644).
+Fibula showed that both approaches were as fast as each other
+, assuming a constant method handle definition:
+
+```shell
+FibulaSample_07_IsVirtualMH.directCall        thrpt    4  1176840295.265 ± 46032071.001  ops/s
+FibulaSample_07_IsVirtualMH.methodHandleCall  thrpt    4  1166157720.139 ± 59339014.156  ops/s
+```
+
+* A quick experiment building with `-H:+SourceLevelDebug` shows that it has a performance impact:
+
+```shell
+MyFirstBenchmark.helloWorld  -H:-SourceLevelDebug thrpt       1845624344.628          ops/s
+MyFirstBenchmark.helloWorld  -H:+SourceLevelDebug thrpt       1640804740.323          ops/s
+```
 
 # Summary
 
-Fibula is the combination of two Quarkus microservices
-, that allows you to JMH benchmarks as GraalVM native executables
-, reusing as much as of JMH as possible.
+Fibula allows you to run JMH benchmarks as GraalVM native executables
+, combining two Quarkus microservices
+, and reusing as much as of JMH as possible.
