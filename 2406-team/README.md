@@ -38,66 +38,90 @@ java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1
 # Dig Deeper
 
 Fibula works without any modifications to JMH.
+
 How does it work underneath?
 Enable DEBUG logging to learn more.
 
-fibula folder:
+From the `fibula` folder:
+```shell
 java -Dquarkus.log.level=DEBUG ...
+````
 
 Focus:
+```bash
 2024-06-05 16:50:21,076 INFO  [io.quarkus] (main) fibula-benchmarks 999-SNAPSHOT on JVM (powered by Quarkus 3.11.0) started in 0.454s. Listening on: http://0.0.0.0:8080
+```
 
-benchmarks.jar is a quarkus application running in jvm mode,
+`benchmarks.jar` is a Quarkus application running in jvm mode,
 configured with a HTTP REST endpoint on port 8080.
+
 This is a boostrap process that coordinates benchmark runs.
 
 Focus:
+```bash
 2024-06-05 16:50:21,092 DEBUG [org.men.fib.boo.BenchmarkService] (main) Read from benchmark list file:
 JMH S 27 org.sample.MyFirstBenchmark S 60 org.sample.jmh_generated.MyFirstBenchmark_helloWorld_jmhTest S 10 helloWorld S 10 Throughput E A 1 1 1 E E E E E E E E E E E E E E E E E
+```
 
 The bootstrap process located metadata related to the benchmark shown before.
+
 More details about this when we discuss what happens at build time.
 
 Focus:
+```bash
 2024-06-06 17:40:36,664 DEBUG [org.men.fib.boo.VmService] (main) Executing: target/fibula-1.0.0-SNAPSHOT-runner --command VM_INFO
+```
 
 The process that runs benchmarks is called a runner,
 and it's a Quarkus command line application.
+
 The vm information at the start is discovered via executing the runner application.
 
 Focus:
+```bash
 2024-06-06 17:40:37,154 DEBUG [org.men.fib.boo.VmResource] (executor-thread-1) Received VM info: VmInfo[jdkVersion=21.0.2, vmName=Substrate VM, vmVersion=21.0.2+13]
+```
 
 How does the runner send back any information,
 such as the vm info,
 back to the bootstrap process?
+
 It uses the HTTP rest client to communicate back to the bootstrap process.
 
-The code uses java records and these are converted into JSON payloads. 
+The code uses Java Records and these are converted into JSON payloads. 
 
 This log message shows the boostrap process receiving vm info via the HTTP REST endpoint.
 
 Focus:
-2024-06-06 17:40:37,281 DEBUG [org.men.fib.boo.BenchmarkService] (main) Executing: target/fibula-1.0.0-SNAPSHOT-runner --command FORK --supplier-name org_sample_jmh_generated_MyFirstBenchmark_helloWorld_jmhTest_helloWorld_Throughput_Supplier --params rO0ABXNy
+```bash
+2024-06-06 17:40:37,281 DEBUG [org.men.fib.boo.BenchmarkService] (main) Executing: target/fibula-1.0.0-SNAPSHOT-runner --command FORK --supplier-name org_sample_jmh_generated_MyFirstBenchmark_helloWorld_jmhTest_helloWorld_Throughput_Supplier --params rO0ABXNy...
+```
 
 The boostrap process instructs the runner to run the first fork benchmark.
+
 Again it invokes the runner as a command line application.
 
-The parameters of the benchmark are java serialized and sent as base 64 text.
+The parameters of the benchmark are Java serialized and sent as Base64 text.
+
 Why do this?
+
 We use JMH's types for representing benchmark parameters,
 and these are serializable.
+
 So, relying on serialization avoids the need for Fibula to reimplement encoding/decoding.
 
 The runner, a native executable,
 has been built with serialization config to understand how to deserialize the parameters.
 
 Focus:
+```bash
 2024-06-06 17:40:47,591 DEBUG [org.men.fib.boo.IterationResource] (executor-thread-1) Received: IterationEnd[iteration=1, result=rO0AB...
+```
 
 The results of each iteration are sent back again via the HTTP REST endpoint.
 
 This is the opposite scenario to benchmark parameters.
+
 For the benchmark results we again rely on JMH types, which again are serializable,
 and here the runner, a native executable,
 java serializes the result and converts it to base 64 text,
@@ -124,8 +148,9 @@ I had just written an email to Andrew Dinn about signing up to the HotSpot train
 saying that I wanted to understand how things worked underneath.
 Then I thought how good was JMH to learn about how things worked...
 Then I thought about Quarkus, how it could process annotations, generate bytecode... and produce native executables.
-And then it clicked!
-I didn't need to modify JMH to run JMH benchmarks as native executables!
+And then it clicked.
+
+I didn't need to modify JMH to run JMH benchmarks as native executables.
 Instead, I could use Quarkus to process JMH annotations,
 generate bytecode just like JMH generates source code for the generated benchmarks,
 generate native executables out of that bytecode and some glue code,
@@ -172,13 +197,15 @@ From the `fibula` folder:
 java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perf:events=branches,instructions
 ```
 
-JMH shows more branches and more instructions
-, but the number of operations executed is higher
-. It's hard to see the issue from just looking at this data.
+JMH shows more branches and more instructions,
+but the number of operations executed is higher.
 
-To find more meaningful data
-, normalize the counters to the number of operations executed
-. JMH has the `perfnorm` profiler that does exactly that.
+It's hard to see the issue from just looking at this data.
+
+To find more meaningful data,
+normalize the counters to the number of operations executed.
+
+JMH has the `perfnorm` profiler that does exactly that.
 
 From the `jmh` folder:
 ```shell
@@ -194,8 +221,9 @@ java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perfnorm
 
 3 branches, 8 instructions per operation.
 
-More branching and more instructions is the reason why SubstrateVM performs worse than HotSpot
-, but what are these additional branches and instructions?
+More branching and more instructions is the reason why SubstrateVM performs worse than HotSpot,
+but what are these additional branches and instructions?
+
 `perfasm` is an additional JMH profiler than help uncover this mistery:
 
 From the `jmh` folder:
@@ -203,9 +231,10 @@ From the `jmh` folder:
 java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perfasm
 ```
 
-1 branch and 6 instructions clearly visible in the output
-. The branch is just the check of `isDone` to see if we have gone past the benchmark running time:
-```shell
+1 branch and 6 instructions clearly visible in the output.
+
+The branch is just the check of `isDone` to see if we have gone past the benchmark running time:
+```bash
           ↗  0x00007f77f8c51160:   movzbl		0x94(%r13), %r10d   ;*getfield isDone {reexecute=0 rethrow=0 return_oop=0}
           │                                                            ; - org.sample.jmh_generated.MyFirstBenchmark_helloWorld_jmhTest::helloWorld_thrpt_jmhStub@25 (line 123)
           │  0x00007f77f8c51168:   movq		0x458(%r15), %r8
@@ -218,27 +247,28 @@ java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perfasm
                                                                        ; - org.sample.jmh_generated.MyFirstBenchmark_helloWorld_jmhTest::helloWorld_thrpt_jmhStub@28 (line 123)
 ```
 
-Something similar can be achieved with Fibula
-, but we need to make some minor command line and tooling changes:
+Something similar can be achieved with Fibula,
+but we need to make some minor command line and tooling changes:
 
-* Instead of the default `perfasm`
-, use a profiler that invokes the `perf record` command just like `perfasm` does
-, but add a DWARF callgraph
-. That is what the `org.mendrugo.fibula.bootstrap.DwarfPerfAsmProfiler` does.
+* Instead of the default `perfasm`,
+use a profiler that invokes the `perf record` command just like `perfasm` does,
+but adds a DWARF callgraph.
+That is what the `org.mendrugo.fibula.bootstrap.DwarfPerfAsmProfiler` does.
 * Skip the ASM part because there's no integration for that yet with Fibula.
-* `perf annotate` will provide something like the `perfasm` output
-, but to be able to run it, instruct JMH to save the `perf.bin` file.
+* `perf annotate` will provide something like the `perfasm` output,
+but to be able to run it,
+instruct JMH to save the `perf.bin` file.
 * Switch from tracking `cycles` event to tracking `cycles:P`.
 The additional `:P` increases the precision of `perf record` by avoiding skidding problems.
 
 From the `fibula` folder:
-```shell
+```bash
 java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof org.mendrugo.fibula.bootstrap.DwarfPerfAsmProfiler:events=cycles:P\;skipAsm=true\;savePerfBin=true
 ```
 
 Now run `perf annotate`:
 ```shell
-
+perf annotate -i org.sample.MyFirstBenchmark.helloWorld-Throughput.perfbin
 ```
 
 The `cmpb+jne` and the `jmp` at the end are the 2 branches for the `isDone` check:
@@ -295,21 +325,21 @@ The additional 3rd branch is the `subl+jle` for the safepoint checks:
 
 ```
 
-This is a very contrived example
-, but it gives an idea on what the type of assembly SubstrateVM generates compared to HotSpot.
+This is a very contrived example,
+but it gives an idea on what the type of assembly SubstrateVM generates compared to HotSpot.
 
-In other examples I've run I've not seen differences between SubstrateVM and HotSpot
-, so the noise we see here might not be so relevant.
+In other examples I've run I've not seen differences between SubstrateVM and HotSpot,
+so the noise we see here might not be so relevant.
 
-In any case
-, some interesting observations can be made:
+In any case, some interesting observations can be made:
 
-* Safepoint checks are not as fancy in SubstrateVM as in HotSpot
-, where instead of littering the code with branches
-, it [uses good/bad pages to avoid the branches](https://foojay.io/today/the-inner-workings-of-safepoints/).
+* SubstrateVM does dead-code-eliminate the empty method.
+* Safepoint checks are not as fancy in SubstrateVM as in HotSpot,
+where instead of littering the code with branches,
+it [uses good/bad pages to avoid the branches](https://foojay.io/today/the-inner-workings-of-safepoints/).
 * The `inc` and related 2 `mov` instructions should be dead-code-eliminated since its value not used.
-* 1 conditional + 1 unconditional branch for the loop
-, while it could be done with just 1 branch.
+* 1 conditional + 1 unconditional branch for the loop,
+while it could be done with just 1 branch.
 
 # Fibula Outings
 
@@ -330,8 +360,8 @@ hashcodePosition  GraalVM 23.1.0          thrpt    4     292367.045 ±    6803.4
 
 * [Franz wanted to know if calling `Thread.isVirtual` via method handle instead of direct call would cause a regression in Substrate]
 (https://github.com/quarkusio/quarkus/pull/39704/files#r1547368644).
-Fibula showed that both approaches were as fast as each other
-, assuming a constant method handle definition:
+Fibula showed that both approaches were as fast as each other,
+assuming a constant method handle definition:
 
 ```shell
 FibulaSample_07_IsVirtualMH.directCall        thrpt    4  1176840295.265 ± 46032071.001  ops/s
@@ -347,6 +377,6 @@ MyFirstBenchmark.helloWorld  -H:+SourceLevelDebug thrpt       1640804740.323    
 
 # Summary
 
-Fibula allows you to run JMH benchmarks as GraalVM native executables
-, combining two Quarkus microservices
-, and reusing as much as of JMH as possible.
+Fibula allows you to run JMH benchmarks as GraalVM native executables,
+combining two Quarkus microservices,
+and reusing as much as of JMH as possible.
