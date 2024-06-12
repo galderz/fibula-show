@@ -2,6 +2,7 @@
 
 One shell:
 ```shell
+benchmarking-linux
 export JAVA_HOME=$HOME/1/jdk21u-dev/build/release-linux-x86_64/jdk
 maven-java
 cd jmh
@@ -10,6 +11,7 @@ mvn clean package -DskipTests
 
 Another shell:
 ```shell
+benchmarking-linux
 graal-21
 cd fibula
 mvn clean package -DskipTests -Pnative -Dquarkus.package.jar.decompiler.enabled=true -Dquarkus.native.debug.enabled -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols,-J--add-exports=jdk.internal.vm.compiler/org.graalvm.compiler.api.directives=ALL-UNNAMED
@@ -133,44 +135,22 @@ and sends that as part of the JSON payload.
 
 # Build Time
 
-This is not my first time trying to get JMH to run with native executables.
+What exactly are these benchmark executing?
 
-I first experimented with it in 2020,
-when I tried to hack JMH to make it work
-and realised it relied on java serialization,
-and at the time there was no support for it in native image.
-and at the time there was no java serialization support.
+If we look at JMH, we see that it generates source code,
+compiles it,
+and then wraps it around code to capture metrics.
+E.g. `./jmh/target/generated-sources/annotations/org/sample/jmh_generated/MyFirstBenchmark_helloWorld_jmhTest.java`
 
-A year or two later native image added java serialization support.
-I tried to hack JMH once more and couldn't get it to work.
-JMH, as is, requires a lot of configuration to make things work in native.
-JMH has a client/server architecture written with plain Java NIO,
-  relies on java serialization...etc.
+Fibula is doing something very similar to JMH,
+but in a slightly different way.
 
-Last September I was on a train ride down to Ticino for a weekend away.
-I had just written an email to Andrew Dinn about signing up to the HotSpot trainings,
-saying that I wanted to understand how things worked underneath.
-Then I thought how good was JMH to learn about how things worked...
-Then I thought about Quarkus, how it could process annotations, generate bytecode... and produce native executables.
-And then it clicked.
-
-I didn't need to modify JMH to run JMH benchmarks as native executables.
-Instead, I could use Quarkus to process JMH annotations,
-generate bytecode just like JMH generates source code for the generated benchmarks,
-generate native executables out of that bytecode and some glue code,
-and voilá, I would have run JMH benchmarks as native executables.
+It's executing bytecode that has been generated using a custom Quarkus extension,
+derived from reading the annotations of the benchmarks.
 
 The bytecode is generated just like any other Quarkus use cases.
 For this use case, this can be found in
 `fibula/target/decompiled/generated-bytecode/org/sample/jmh_generated/MyFirstBenchmark_helloWorld_jmhTest_helloWorld_Throughput_Function.java`.
-
-The equivalent for JMH can be found in
-`./jmh/target/generated-sources/annotations/org/sample/jmh_generated/MyFirstBenchmark_helloWorld_jmhTest.java`
-
-Why does Fibula show a `fori` loop?
-Technically Fibula instructs Gizmo to create a while loop,
-but this is transformed into a `fori` loop.
-Needs further investigation.
 
 # Why The Difference In Performance?
 
@@ -255,15 +235,15 @@ Something similar can be achieved with Fibula,
 but we need to make some minor command line and tooling changes:
 
 * Instead of the default `perfasm`,
-use a profiler that invokes the `perf record` command just like `perfasm` does,
-but adds a DWARF callgraph.
-That is what the `org.mendrugo.fibula.bootstrap.DwarfPerfAsmProfiler` does.
+  use a profiler that invokes the `perf record` command just like `perfasm` does,
+  but adds a DWARF callgraph.
+  That is what the `org.mendrugo.fibula.bootstrap.DwarfPerfAsmProfiler` does.
+* Switch from tracking `cycles` event to tracking `cycles:P`.
+  The additional `:P` increases the precision of `perf record` by avoiding skidding problems.
 * Skip the ASM part because there's no integration for that yet with Fibula.
 * `perf annotate` will provide something like the `perfasm` output,
-but to be able to run it,
-instruct JMH to save the `perf.bin` file.
-* Switch from tracking `cycles` event to tracking `cycles:P`.
-The additional `:P` increases the precision of `perf record` by avoiding skidding problems.
+  but to be able to run it,
+  instruct JMH to save the `perf.bin` file.
 
 From the `fibula` folder:
 ```bash
@@ -342,7 +322,6 @@ In any case, some interesting observations can be made:
 * Safepoint checks are not as fancy in SubstrateVM as in HotSpot,
   where instead of littering the code with branches,
   it [uses good/bad pages to avoid the branches](https://foojay.io/today/the-inner-workings-of-safepoints/).
-* The `inc` and related 2 `mov` instructions should be dead-code-eliminated since its value not used.
 * 1 conditional + 1 unconditional branch for the loop,
   while it could be done with just 1 branch.
 
@@ -363,8 +342,7 @@ equalsPositions   GraalVM 23.1.0          thrpt    4     117738.738 ±    1891.3
 hashcodePosition  GraalVM 23.1.0          thrpt    4     292367.045 ±    6803.486  ops/s
 ```
 
-* [Franz wanted to know if calling `Thread.isVirtual` via method handle instead of direct call would cause a regression in Substrate]
-(https://github.com/quarkusio/quarkus/pull/39704/files#r1547368644).
+* [Franz wanted to know if calling `Thread.isVirtual` via method handle instead of direct call would cause a regression in Substrate](https://github.com/quarkusio/quarkus/pull/39704/files#r1547368644).
 Fibula showed that both approaches were as fast as each other,
 assuming a constant method handle definition:
 
@@ -385,3 +363,32 @@ MyFirstBenchmark.helloWorld  -H:+SourceLevelDebug thrpt       1640804740.323    
 Fibula allows you to run JMH benchmarks as GraalVM native executables,
 combining two Quarkus microservices,
 and reusing as much as of JMH as possible.
+
+# Origin
+
+This is not my first time trying to get JMH to run with native executables.
+
+I first experimented with it in 2020,
+when I tried to hack JMH to make it work
+and realised it relied on java serialization,
+and at the time there was no support for it in native image.
+and at the time there was no java serialization support.
+
+A year or two later native image added java serialization support.
+I tried to hack JMH once more and couldn't get it to work.
+JMH, as is, requires a lot of configuration to make things work in native.
+JMH has a client/server architecture written with plain Java NIO,
+relies on java serialization...etc.
+
+Last September I was on a train ride down to Ticino for a weekend away.
+I had just written an email to Andrew Dinn about signing up to the HotSpot trainings,
+saying that I wanted to understand how things worked underneath.
+Then I thought how good was JMH to learn about how things worked...
+Then I thought about Quarkus, how it could process annotations, generate bytecode... and produce native executables.
+And then it clicked.
+
+I didn't need to modify JMH to run JMH benchmarks as native executables.
+Instead, I could use Quarkus to process JMH annotations,
+generate bytecode just like JMH generates source code for the generated benchmarks,
+generate native executables out of that bytecode and some glue code,
+and voilá, I would have run JMH benchmarks as native executables.
