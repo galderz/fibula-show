@@ -21,6 +21,8 @@ Press record!
 
 # First JMH benchmark
 
+Show JMH benchmark in IDE.
+
 From the `jmh` folder:
 ```shell
 java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1
@@ -29,6 +31,8 @@ java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1
 Note to audience: VM version, VM invoker
 
 # First Fibula benchmark
+
+Demonstrate that the benchmark is exactly the same as before in the IDE.
 
 From the `fibula` folder:
 ```shell
@@ -334,12 +338,13 @@ so the noise we see here might not be so relevant.
 In any case, some interesting observations can be made:
 
 * SubstrateVM does dead-code-eliminate the empty method.
+* But the safepoint check is not, should it also be dead-code-eliminated?
 * Safepoint checks are not as fancy in SubstrateVM as in HotSpot,
-where instead of littering the code with branches,
-it [uses good/bad pages to avoid the branches](https://foojay.io/today/the-inner-workings-of-safepoints/).
+  where instead of littering the code with branches,
+  it [uses good/bad pages to avoid the branches](https://foojay.io/today/the-inner-workings-of-safepoints/).
 * The `inc` and related 2 `mov` instructions should be dead-code-eliminated since its value not used.
 * 1 conditional + 1 unconditional branch for the loop,
-while it could be done with just 1 branch.
+  while it could be done with just 1 branch.
 
 # Fibula Outings
 
