@@ -170,7 +170,7 @@ To avoid this, let's limit track `perf` stats to `branches` and `instructions`:
 
 From the `jmh` folder:
 ```shell
-java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perf:events=branches,instructions
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perf:events=branches,instructions,cycles
 ```
 
 We have got some branch and instructions numbers.
@@ -178,7 +178,7 @@ Let's try to compare them with Fibula.
 
 From the `fibula` folder:
 ```shell
-java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perf:events=branches,instructions
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perf:events=branches,instructions,cycles
 ```
 
 JMH shows more branches and more instructions,
@@ -193,14 +193,14 @@ JMH has the `perfnorm` profiler that does exactly that.
 
 From the `jmh` folder:
 ```shell
-java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perfnorm:events=branches,instructions
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perfnorm:events=branches,instructions,cycles
 ```
 
 1 branch, 6 instructions per operation.
 
 From the `fibula` folder:
 ```shell
-java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perfnorm:events=branches,instructions
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perfnorm:events=branches,instructions,cycles
 ```
 
 3 branches, 8 instructions per operation.
