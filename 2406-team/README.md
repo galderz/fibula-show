@@ -219,15 +219,15 @@ java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perfasm
 
 The branch is just the check of `isDone` to see if we have gone past the benchmark running time:
 ```bash
-          ↗  0x00007f77f8c51160:   movzbl		0x94(%r13), %r10d   ;*getfield isDone {reexecute=0 rethrow=0 return_oop=0}
+          ↗  0x00007f3c20b29e80:   movzbl		0x94(%r13), %r10d   ;*getfield isDone {reexecute=0 rethrow=0 return_oop=0}
           │                                                            ; - org.sample.jmh_generated.MyFirstBenchmark_helloWorld_jmhTest::helloWorld_thrpt_jmhStub@25 (line 123)
-          │  0x00007f77f8c51168:   movq		0x458(%r15), %r8
-  23.65%  │  0x00007f77f8c5116f:   addq		$1, %r11            ; ImmutableOopMap {r9=Oop rbx=Oop r13=Oop }
+          │  0x00007f3c20b29e88:   movq		0x450(%r15), %r8
+          │  0x00007f3c20b29e8f:   addq		$1, %r11            ; ImmutableOopMap {r9=Oop rbx=Oop r13=Oop }
           │                                                            ;*ifeq {reexecute=1 rethrow=0 return_oop=0}
           │                                                            ; - (reexecute) org.sample.jmh_generated.MyFirstBenchmark_helloWorld_jmhTest::helloWorld_thrpt_jmhStub@28 (line 123)
-          │  0x00007f77f8c51173:   testl		%eax, (%r8)         ;   {poll}
-  65.31%  │  0x00007f77f8c51176:   testl		%r10d, %r10d
-          ╰  0x00007f77f8c51179:   je		0x7f77f8c51160      ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
+  33.64%  │  0x00007f3c20b29e93:   testl		%eax, (%r8)         ;   {poll}
+  31.59%  │  0x00007f3c20b29e96:   testl		%r10d, %r10d
+          ╰  0x00007f3c20b29e99:   je		0x7f3c20b29e80      ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
                                                                        ; - org.sample.jmh_generated.MyFirstBenchmark_helloWorld_jmhTest::helloWorld_thrpt_jmhStub@28 (line 123)
 ```
 
@@ -258,55 +258,54 @@ perf annotate -i org.sample.MyFirstBenchmark.helloWorld-Throughput.perfbin
 The `cmpb+jne` and the `jmp` at the end are the 2 branches for the `isDone` check:
 
 ```shell
-  8.87 │90:┌──cmpb       $0x0,0xc(%rsi)
-  8.49 │   ├──jne        b0
-  8.61 │   │  mov        %rax,%rcx
- 16.68 │   │  inc        %rcx
-  7.46 │   │  subl       $0x1,0x10(%r15)
- 16.45 │   │↓ jle        d9
- 17.27 │   │  mov        %rcx,%rax
- 16.16 │   │↑ jmp        90
-       │b0:└─→mov        %rax,0x20(%rsp)
+ 16.77 │90:┌──cmpb      $0x0,0xc(%rsi) 
+       │   ├──jne       b0
+       │   │  mov       %rax,%rcx
+       │   │  inc       %rcx
+ 83.23 │   │  subl      $0x1,0x10(%r15)
+       │   │↓ jle       d9
+       │   │  mov       %rcx,%rax
+       │   │↑ jmp       90
+       │b0:└─→mov       %rax,0x20(%rsp)
 ```
 
 ```shell
-  8.87 │90:┌─→cmpb       $0x0,0xc(%rsi)
-  8.49 │   │↓ jne        b0
-  8.61 │   │  mov        %rax,%rcx
- 16.68 │   │  inc        %rcx
-  7.46 │   │  subl       $0x1,0x10(%r15)
- 16.45 │   │↓ jle        d9
- 17.27 │   │  mov        %rcx,%rax
- 16.16 │   └──jmp        90
+ 16.77 │90:┌─→cmpb      $0x0,0xc(%rsi)
+       │   │↓ jne       b0
+       │   │  mov       %rax,%rcx
+       │   │  inc       %rcx
+ 83.23 │   │  subl      $0x1,0x10(%r15)
+       │   │↓ jle       d9
+       │   │  mov       %rcx,%rax
+       │   └──jmp       90
 ```
 
 The additional 3rd branch is the `subl+jle` for the safepoint checks:
 
 ```shell
-  8.87 │90:   cmpb       $0x0,0xc(%rsi)
-  8.49 │    ↓ jne        b0
-  8.61 │      mov        %rax,%rcx
- 16.68 │      inc        %rcx
-  7.46 │      subl       $0x1,0x10(%r15)
- 16.45 │   ┌──jle        d9
- 17.27 │   │  mov        %rcx,%rax
- 16.16 │   │↑ jmp        90
-       │b0:│  mov        %rax,0x20(%rsp)
-       │   │↑ jmp        53
-       │b7:│  mov        0x20(%rsp),%rax
+ 16.77 │90:   cmpb      $0x0,0xc(%rsi)
+       │    ↓ jne       b0
+       │      mov       %rax,%rcx
+       │      inc       %rcx
+ 83.23 │   ┌──subl      $0x1,0x10(%r15)
+       │   ├──jle       d9
+       │   │  mov       %rcx,%rax
+       │   │↑ jmp       90
+       │b0:│  mov       %rax,0x20(%rsp)
+       │   │↑ jmp       53
+       │b7:│  mov       0x20(%rsp),%rax
        │   │  nop
-       │   │→ call       _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv
+       │   │→ call      _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv                    
        │   │  nop
-       │   │↑ jmp        79
-       │c8:│  mov        %r8,0x10(%rsp)
-       │   │→ call       _ZN57com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl26throwNewStackOverflowErrorEJvv
+       │   │↑ jmp       79
+       │c8:│  mov       %r8,0x10(%rsp)
+       │   │→ call      _ZN57com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl26throwNewStackOverflowErrorEJvv
        │   │  nop
-       │d3:│→ call       _ZN47com.oracle.svm.core.snippets.ImplicitExceptions28throwNewNullPointerExceptionEJvv
+       │d3:│→ call      _ZN47com.oracle.svm.core.snippets.ImplicitExceptions28throwNewNullPointerExceptionEJvv
        │   │  nop
-       │d9:└─→mov        0x10(%rsp),%r8
-       │      xchg       %ax,%ax
-       │    → call       _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv
-
+       │d9:└─→mov       0x10(%rsp),%r8
+       │      xchg      %ax,%ax
+       │    → call      _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv
 ```
 
 This is a very contrived example,
@@ -324,6 +323,10 @@ In any case, some interesting observations can be made:
   it [uses good/bad pages to avoid the branches](https://foojay.io/today/the-inner-workings-of-safepoints/).
 * 1 conditional + 1 unconditional branch for the loop,
   while it could be done with just 1 branch.
+* The increased branches, instructions and cycles per op shows the assembly in SubstrateVM is slower than HotSpot.
+  But we can take a step further and emulate these assemblies side by side.
+** [SubstrateVM uops.info](https://uica.uops.info/?code=loop%3A%0D%0Acmpb%20%20%20%20%20%20%240x0%2C0xc(%25rsi)%0D%0Ajne%20%20%20%20%20%20%20b0%0D%0Amov%20%20%20%20%20%20%20%25rax%2C%25rcx%0D%0Ainc%20%20%20%20%20%20%20%25rcx%0D%0Asubl%20%20%20%20%20%20%240x1%2C0x10(%25r15)%0D%0Ajle%20%20%20%20%20%20%20d9%0D%0Amov%20%20%20%20%20%20%20%25rcx%2C%25rax%0D%0Ajmp%20%20%20%20%20%20%20loop%0D%0A&syntax=asATT&uArchs=SNB&tools=uiCA&alignment=0&uiCAHtmlOptions=traceTable&uiCAHtmlOptions=dependencies)
+** [HotSpot uops.info](https://uica.uops.info/?code=loop%3A%0D%0Amovzbl%09%090x94(%25r13)%2C%20%25r10d%0D%0Amovq%09%090x450(%25r15)%2C%20%25r8%0D%0Aaddq%09%09%241%2C%20%25r11%0D%0Atestl%09%09%25eax%2C%20(%25r8)%0D%0Atestl%09%09%25r10d%2C%20%25r10d%0D%0Aje%09%09loop%0D%0A&syntax=asATT&uArchs=SNB&tools=uiCA&alignment=0&uiCAHtmlOptions=traceTable&uiCAHtmlOptions=dependencies)
 
 # Fibula Outings
 
@@ -361,8 +364,7 @@ MyFirstBenchmark.helloWorld  -H:+SourceLevelDebug thrpt       1640804740.323    
 # Summary
 
 Fibula allows you to run JMH benchmarks as GraalVM native executables,
-combining two Quarkus microservices,
-and reusing as much as of JMH as possible.
+combining two Quarkus microservices and reusing JMH APIs.
 
 # Origin
 
