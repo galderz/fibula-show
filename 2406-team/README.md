@@ -14,7 +14,7 @@ Another shell:
 benchmarking-linux
 graal-21
 cd fibula
-mvn clean package -DskipTests -Pnative -Dquarkus.package.jar.decompiler.enabled=true -Dquarkus.native.debug.enabled -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols,-J--add-exports=jdk.internal.vm.compiler/org.graalvm.compiler.api.directives=ALL-UNNAMED
+mvn clean package -DskipTests -Pnative -Dquarkus.package.jar.decompiler.enabled=true -Dquarkus.native.debug.enabled -Dfibula.native.additional-build-args=-H:-DeleteLocalSymbols
 ```
 
 # Record
@@ -363,8 +363,7 @@ MyFirstBenchmark.helloWorld  -H:+SourceLevelDebug thrpt       1640804740.323    
 
 # Summary
 
-Fibula allows you to run JMH benchmarks as GraalVM native executables,
-combining two Quarkus microservices and reusing JMH APIs.
+Fibula allows you to run JMH benchmarks as GraalVM native executables.
 
 # Origin
 
