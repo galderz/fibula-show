@@ -212,22 +212,22 @@ but what are these additional branches and instructions?
 
 From the `jmh` folder:
 ```shell
-java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perfasm
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perfasm:events=cycles:P
 ```
 
 1 branch and 6 instructions clearly visible in the output.
 
 The branch is just the check of `isDone` to see if we have gone past the benchmark running time:
 ```bash
-          ↗  0x00007f3c20b29e80:   movzbl		0x94(%r13), %r10d   ;*getfield isDone {reexecute=0 rethrow=0 return_oop=0}
+   2.52%  ↗  0x00007fe5dcb30251:   movzbl		0x94(%r11), %r10d   ;*getfield isDone {reexecute=0 rethrow=0 return_oop=0}
           │                                                            ; - org.sample.jmh_generated.MyFirstBenchmark_helloWorld_jmhTest::helloWorld_thrpt_jmhStub@25 (line 123)
-          │  0x00007f3c20b29e88:   movq		0x450(%r15), %r8
-          │  0x00007f3c20b29e8f:   addq		$1, %r11            ; ImmutableOopMap {r9=Oop rbx=Oop r13=Oop }
+  10.27%  │  0x00007fe5dcb30259:   movq		0x450(%r15), %r8
+  15.70%  │  0x00007fe5dcb30260:   addq		$1, %r13            ; ImmutableOopMap {r11=Oop rbx=Oop r14=Oop }
           │                                                            ;*ifeq {reexecute=1 rethrow=0 return_oop=0}
           │                                                            ; - (reexecute) org.sample.jmh_generated.MyFirstBenchmark_helloWorld_jmhTest::helloWorld_thrpt_jmhStub@28 (line 123)
-  33.64%  │  0x00007f3c20b29e93:   testl		%eax, (%r8)         ;   {poll}
-  31.59%  │  0x00007f3c20b29e96:   testl		%r10d, %r10d
-          ╰  0x00007f3c20b29e99:   je		0x7f3c20b29e80      ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
+  26.55%  │  0x00007fe5dcb30264:   testl		%eax, (%r8)         ;   {poll}
+          │  0x00007fe5dcb30267:   testl		%r10d, %r10d
+   0.19%  ╰  0x00007fe5dcb3026a:   je		0x7fe5dcb30251      ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
                                                                        ; - org.sample.jmh_generated.MyFirstBenchmark_helloWorld_jmhTest::helloWorld_thrpt_jmhStub@28 (line 123)
 ```
 
