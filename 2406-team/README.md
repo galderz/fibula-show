@@ -208,7 +208,10 @@ java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof perfnorm
 More branching and more instructions is the reason why SubstrateVM performs worse than HotSpot,
 but what are these additional branches and instructions?
 
-`perfasm` is an additional JMH profiler than help uncover this mistery:
+`perfasm` is an additional JMH profiler than help uncover this mistery.
+
+Tweak `perfasm` parameters to track `cycles:P` instead of default `cycles`.
+The additional `:P` increases the precision of `perf record` by avoiding skidding problems.
 
 From the `jmh` folder:
 ```shell
@@ -232,22 +235,18 @@ The branch is just the check of `isDone` to see if we have gone past the benchma
 ```
 
 Something similar can be achieved with Fibula,
-but we need to make some minor command line and tooling changes:
+but instead of using the default `perfasm`,
+we use a custom profiler that extends `perfasm`
+called `org.mendrugo.fibula.bootstrap.DwarfPerfAsmProfiler`.
+This profiler makes the following changes:
 
-* Instead of the default `perfasm`,
-  use a profiler that invokes the `perf record` command just like `perfasm` does,
-  but adds a DWARF callgraph.
-  That is what the `org.mendrugo.fibula.bootstrap.DwarfPerfAsmProfiler` does.
-* Switch from tracking `cycles` event to tracking `cycles:P`.
-  The additional `:P` increases the precision of `perf record` by avoiding skidding problems.
-* Skip the ASM part because there's no integration for that yet with Fibula.
-* `perf annotate` will provide something like the `perfasm` output,
-  but to be able to run it,
-  instruct JMH to save the `perf.bin` file.
+* Tweaks the `perf record` invocation in `perfasm` to add DWARF callgraph.
+* Skips the assembly mapping part because there's no integration for that yet with Fibula.
+* Saves the perf binary file separately so that it can be post-processed with `perf annotate`. 
 
 From the `fibula` folder:
 ```bash
-java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof org.mendrugo.fibula.bootstrap.DwarfPerfAsmProfiler:events=cycles:P\;skipAsm=true\;savePerfBin=true
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -prof org.mendrugo.fibula.bootstrap.DwarfPerfAsmProfiler:events=cycles:P
 ```
 
 Now run `perf annotate`:
