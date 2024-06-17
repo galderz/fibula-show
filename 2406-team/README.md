@@ -1,6 +1,14 @@
 # Before
 
-One shell:
+Shell 1:
+```shell
+maven-21
+cd fibula
+git pull
+mvn clean install -DskipTests
+```
+
+Shell 2:
 ```shell
 benchmarking-linux
 export JAVA_HOME=$HOME/1/jdk21u-dev/build/release-linux-x86_64/jdk
@@ -9,12 +17,21 @@ cd jmh
 mvn clean package -DskipTests
 ```
 
-Another shell:
+Shell 3:
 ```shell
 benchmarking-linux
 graal-21
 cd fibula
 mvn clean package -DskipTests -Pnative -Dquarkus.package.jar.decompiler.enabled=true -Dquarkus.native.debug.enabled -Dfibula.native.additional-build-args=-H:-DeleteLocalSymbols
+```
+
+Optional shell 4:
+```shell
+export JAVA_HOME=$HOME/1/jdk21u-dev/build/release-linux-x86_64/jdk
+maven-java
+cd fibula-jvm
+mvn clean package -DskipTests
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1
 ```
 
 # Record
@@ -399,10 +416,7 @@ Fibula can also run in JVM mode.
 This can be useful to detect any issues with Fibula itself:
 
 ```shell
-export JAVA_HOME=$HOME/1/jdk21u-dev/build/release-linux-x86_64/jdk
-maven-java
 cd fibula-jvm
-mvn clean package -DskipTests
 java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1
 ```
 
