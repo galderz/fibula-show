@@ -347,7 +347,7 @@ In any case, some interesting observations can be made:
 
 Some real life examples using Fibula:
 
-* Records equals/hashCode performance.
+* **Feb 2024**: Records equals/hashCode performance.
 Initially performance was very bad when records support came out in SubstrateVM.
 Christian improved the performance with this [PR](https://github.com/oracle/graal/pull/8109).
 A JMH benchmark running with Fibula was able to confirm that the performance had improved significantly:
@@ -360,7 +360,7 @@ equalsPositions   GraalVM 23.1.0          thrpt    4     117738.738 ±    1891.3
 hashcodePosition  GraalVM 23.1.0          thrpt    4     292367.045 ±    6803.486  ops/s
 ```
 
-* [Franz wanted to know if calling `Thread.isVirtual` via method handle instead of direct call would cause a regression in Substrate](https://github.com/quarkusio/quarkus/pull/39704/files#r1547368644).
+* **Apr 20204**: [Franz wanted to know if calling `Thread.isVirtual` via method handle instead of direct call would cause a regression in Substrate](https://github.com/quarkusio/quarkus/pull/39704/files#r1547368644).
 Fibula showed that both approaches were as fast as each other,
 assuming a constant method handle definition:
 
@@ -369,7 +369,7 @@ FibulaSample_07_IsVirtualMH.directCall        thrpt    4  1176840295.265 ± 4603
 FibulaSample_07_IsVirtualMH.methodHandleCall  thrpt    4  1166157720.139 ± 59339014.156  ops/s
 ```
 
-* A quick experiment building with `-H:+SourceLevelDebug` shows that it has a performance impact:
+* **June 2024**: A quick experiment building with `-H:+SourceLevelDebug` shows that it has a performance impact:
 
 ```shell
 MyFirstBenchmark.helloWorld  -H:-SourceLevelDebug thrpt       1845624344.628          ops/s
