@@ -31,7 +31,6 @@ export JAVA_HOME=$HOME/1/jdk21u-dev/build/release-linux-x86_64/jdk
 maven-java
 cd fibula-jvm
 mvn clean package -DskipTests
-java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1
 ```
 
 # Record
@@ -341,8 +340,8 @@ In any case, some interesting observations can be made:
   while it could be done with just 1 branch.
 * The increased branches, instructions and cycles per op shows the assembly in SubstrateVM is slower than HotSpot.
   But we can take a step further and emulate these assemblies side by side.
-** [SubstrateVM uops.info](https://uica.uops.info/?code=loop%3A%0D%0Acmpb%20%20%20%20%20%20%240x0%2C0xc(%25rsi)%0D%0Ajne%20%20%20%20%20%20%20b0%0D%0Amov%20%20%20%20%20%20%20%25rax%2C%25rcx%0D%0Ainc%20%20%20%20%20%20%20%25rcx%0D%0Asubl%20%20%20%20%20%20%240x1%2C0x10(%25r15)%0D%0Ajle%20%20%20%20%20%20%20d9%0D%0Amov%20%20%20%20%20%20%20%25rcx%2C%25rax%0D%0Ajmp%20%20%20%20%20%20%20loop%0D%0A&syntax=asATT&uArchs=SNB&tools=uiCA&alignment=0&uiCAHtmlOptions=traceTable&uiCAHtmlOptions=dependencies)
-** [HotSpot uops.info](https://uica.uops.info/?code=loop%3A%0D%0Amovzbl%09%090x94(%25r13)%2C%20%25r10d%0D%0Amovq%09%090x450(%25r15)%2C%20%25r8%0D%0Aaddq%09%09%241%2C%20%25r11%0D%0Atestl%09%09%25eax%2C%20(%25r8)%0D%0Atestl%09%09%25r10d%2C%20%25r10d%0D%0Aje%09%09loop%0D%0A&syntax=asATT&uArchs=SNB&tools=uiCA&alignment=0&uiCAHtmlOptions=traceTable&uiCAHtmlOptions=dependencies)
+  * [SubstrateVM uops.info](https://uica.uops.info/?code=loop%3A%0D%0Acmpb%20%20%20%20%20%20%240x0%2C0xc(%25rsi)%0D%0Ajne%20%20%20%20%20%20%20b0%0D%0Amov%20%20%20%20%20%20%20%25rax%2C%25rcx%0D%0Ainc%20%20%20%20%20%20%20%25rcx%0D%0Asubl%20%20%20%20%20%20%240x1%2C0x10(%25r15)%0D%0Ajle%20%20%20%20%20%20%20d9%0D%0Amov%20%20%20%20%20%20%20%25rcx%2C%25rax%0D%0Ajmp%20%20%20%20%20%20%20loop%0D%0A&syntax=asATT&uArchs=SNB&tools=uiCA&alignment=0&uiCAHtmlOptions=traceTable&uiCAHtmlOptions=dependencies)
+  * [HotSpot uops.info](https://uica.uops.info/?code=loop%3A%0D%0Amovzbl%09%090x94(%25r13)%2C%20%25r10d%0D%0Amovq%09%090x450(%25r15)%2C%20%25r8%0D%0Aaddq%09%09%241%2C%20%25r11%0D%0Atestl%09%09%25eax%2C%20(%25r8)%0D%0Atestl%09%09%25r10d%2C%20%25r10d%0D%0Aje%09%09loop%0D%0A&syntax=asATT&uArchs=SNB&tools=uiCA&alignment=0&uiCAHtmlOptions=traceTable&uiCAHtmlOptions=dependencies)
 
 # Fibula Outings
 
