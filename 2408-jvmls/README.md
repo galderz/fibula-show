@@ -123,7 +123,7 @@ Let's try to compare them with Fibula.
 
 From the `fibula` folder:
 ```shell
-java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -tu ns -prof perf:events=branches,instructions,cycles
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -tu us -prof perf:events=branches,instructions,cycles
 ```
 
 JMH shows more branches and more instructions,
@@ -138,7 +138,7 @@ JMH has the `perfnorm` profiler that does exactly that.
 
 From the `jmh` folder:
 ```shell
-java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -tu ns -prof perfnorm:events=branches,instructions,cycles
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -tu us -prof perfnorm:events=branches,instructions,cycles
 ```
 
 Output:
@@ -150,7 +150,7 @@ MyFirstBenchmark.helloWorld:instructions  thrpt         6.132               #/op
 
 From the `fibula` folder:
 ```shell
-java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -tu ns -prof perfnorm:events=branches,instructions,cycles
+java -jar target/benchmarks.jar MyFirst -f 1 -i 1 -wi 1 -r 1 -w 1 -tu us -prof perfnorm:events=branches,instructions,cycles
 ```
 
 Output:
