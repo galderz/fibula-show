@@ -15,6 +15,7 @@
         <quarkus.platform.version>3.11.1</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.2.5</surefire-plugin.version>
+        <uberjar.name>benchmarks</uberjar.name>
 
         <fibula.version>999-SNAPSHOT</fibula.version>
     </properties>
@@ -107,7 +108,7 @@
                         <phase>package</phase>
                         <configuration>
                             <target>
-                                <jar destfile="${project.build.directory}/benchmarks.jar" update="true">
+                                <jar destfile="${project.build.directory}/${uberjar.name}" update="true">
                                     <fileset dir="${project.build.directory}/classes">
                                         <include name="META-INF/BenchmarkList"/>
                                     </fileset>
