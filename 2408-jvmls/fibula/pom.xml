@@ -40,7 +40,7 @@
         <dependency>
             <groupId>org.mendrugo.fibula</groupId>
             <artifactId>fibula-bootstrap</artifactId>
-            <version>${project.version}</version>
+            <version>${fibula.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mendrugo.fibula</groupId>
