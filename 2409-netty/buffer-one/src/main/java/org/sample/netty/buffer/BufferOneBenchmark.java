@@ -1,8 +1,8 @@
 package org.sample.netty.buffer;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.UnpooledByteBufAllocator;
-import io.netty.buffer.UnpooledUnsafeDirectByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.util.internal.PlatformDependent;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -42,12 +42,9 @@ public class BufferOneBenchmark
     @Setup
     public void setup()
     {
-        buffer = new UnpooledUnsafeDirectByteBuf(
-            UnpooledByteBufAllocator.DEFAULT
-            , 64
-            , 64
-        );
-        buffer.setIndex(0, 64);
+        System.out.printf("Has unsafe: %b", PlatformDependent.hasUnsafe());
+        System.out.printf("Prefer direct buffer: %b", PlatformDependent.directBufferPreferred());
+        buffer = PooledByteBufAllocator.DEFAULT.buffer(8, 8);
     }
 
     @TearDown
