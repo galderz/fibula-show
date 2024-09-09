@@ -19,7 +19,7 @@ Shell 2:
 benchmarking-linux
 graal-21
 cd fibula
-mvn clean package -DskipTests -Pnative -Dquarkus.package.jar.decompiler.enabled=true -Dquarkus.native.debug.enabled -Dfibula.native.additional-build-args=-H:-DeleteLocalSymbols
+mvn clean package -DskipTests -Pnative -Dquarkus.package.jar.decompiler.enabled=true -Dquarkus.native.debug.enabled -Dquarkus.native.additional-build-args=-H:-DeleteLocalSymbols
 ```
 
 Optional shell 3:
