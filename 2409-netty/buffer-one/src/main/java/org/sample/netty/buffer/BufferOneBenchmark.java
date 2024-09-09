@@ -42,8 +42,8 @@ public class BufferOneBenchmark
     @Setup
     public void setup()
     {
-        System.out.printf("Has unsafe: %b", PlatformDependent.hasUnsafe());
-        System.out.printf("Prefer direct buffer: %b", PlatformDependent.directBufferPreferred());
+        System.out.printf("Has unsafe: %b%n", PlatformDependent.hasUnsafe());
+        System.out.printf("Prefer direct buffer: %b%n", PlatformDependent.directBufferPreferred());
         buffer = PooledByteBufAllocator.DEFAULT.buffer(8, 8);
     }
 
