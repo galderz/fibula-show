@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Thread)
-public class BufferOneBenchmark
+public class BufferTwoBenchmark
 {
     private ByteBuf buffer;
 
@@ -42,6 +42,15 @@ public class BufferOneBenchmark
     @Setup
     public void setup()
     {
+        try
+        {
+            System.out.printf("Load PooledDirectByteBuf class: %s%n", Class.forName("io.netty.buffer.PooledDirectByteBuf"));
+        }
+        catch (ClassNotFoundException e)
+        {
+            throw new RuntimeException("io.netty.buffer.PooledDirectByteBuf class not found");
+        }
+
         System.out.printf("Has unsafe: %b%n", PlatformDependent.hasUnsafe());
         System.out.printf("Prefer direct buffer: %b%n", PlatformDependent.directBufferPreferred());
         buffer = PooledByteBufAllocator.DEFAULT.buffer(8, 8);
