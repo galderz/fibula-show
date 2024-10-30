@@ -1,0 +1,109 @@
+[
+{
+  "name":"java.io.Console",
+  "methods":[{"name":"charset","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.Boolean",
+  "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.lang.Integer",
+  "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.lang.String",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }, {"name":"valueOf","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.net.InetAddress",
+  "methods":[{"name":"getLoopbackAddress","parameterTypes":[] }]
+},
+{
+  "name":"java.security.SecureRandomParameters"
+},
+{
+  "name":"java.util.concurrent.ForkJoinTask",
+  "fields":[{"name":"aux"}, {"name":"status"}]
+},
+{
+  "name":"java.util.concurrent.atomic.AtomicBoolean",
+  "fields":[{"name":"value"}]
+},
+{
+  "name":"java.util.concurrent.atomic.AtomicReference",
+  "fields":[{"name":"value"}]
+},
+{
+  "name":"jdk.internal.misc.Unsafe"
+},
+{
+  "name":"org.openjdk.jmh.infra.BenchmarkParams",
+  "fields":[{"name":"benchmark"}, {"name":"forks"}, {"name":"generatedTarget"}, {"name":"jvm"}, {"name":"jvmArgs"}, {"name":"markerBegin"}, {"name":"markerEnd"}, {"name":"measurement"}, {"name":"mode"}, {"name":"opsPerInvocation"}, {"name":"params"}, {"name":"synchIterations"}, {"name":"threadGroups"}, {"name":"threads"}, {"name":"timeUnit"}, {"name":"warmup"}, {"name":"warmupForks"}]
+},
+{
+  "name":"org.openjdk.jmh.infra.BenchmarkParamsL0",
+  "fields":[{"name":"markerBegin"}]
+},
+{
+  "name":"org.openjdk.jmh.infra.BenchmarkParamsL1",
+  "fields":[{"name":"markerBegin"}]
+},
+{
+  "name":"org.openjdk.jmh.infra.BenchmarkParamsL2",
+  "fields":[{"name":"benchmark"}, {"name":"forks"}, {"name":"generatedTarget"}, {"name":"jvm"}, {"name":"jvmArgs"}, {"name":"markerBegin"}, {"name":"measurement"}, {"name":"mode"}, {"name":"opsPerInvocation"}, {"name":"params"}, {"name":"synchIterations"}, {"name":"threadGroups"}, {"name":"threads"}, {"name":"timeUnit"}, {"name":"warmup"}, {"name":"warmupForks"}]
+},
+{
+  "name":"org.openjdk.jmh.infra.BenchmarkParamsL3",
+  "fields":[{"name":"benchmark"}, {"name":"forks"}, {"name":"generatedTarget"}, {"name":"jvm"}, {"name":"jvmArgs"}, {"name":"markerBegin"}, {"name":"measurement"}, {"name":"mode"}, {"name":"opsPerInvocation"}, {"name":"params"}, {"name":"synchIterations"}, {"name":"threadGroups"}, {"name":"threads"}, {"name":"timeUnit"}, {"name":"warmup"}, {"name":"warmupForks"}]
+},
+{
+  "name":"org.openjdk.jmh.infra.BenchmarkParamsL4",
+  "fields":[{"name":"benchmark"}, {"name":"forks"}, {"name":"generatedTarget"}, {"name":"jvm"}, {"name":"jvmArgs"}, {"name":"markerBegin"}, {"name":"markerEnd"}, {"name":"measurement"}, {"name":"mode"}, {"name":"opsPerInvocation"}, {"name":"params"}, {"name":"synchIterations"}, {"name":"threadGroups"}, {"name":"threads"}, {"name":"timeUnit"}, {"name":"warmup"}, {"name":"warmupForks"}]
+},
+{
+  "name":"org.openjdk.jmh.infra.IterationParams",
+  "fields":[{"name":"batchSize"}, {"name":"count"}, {"name":"markerBegin"}, {"name":"markerEnd"}, {"name":"timeValue"}, {"name":"type"}]
+},
+{
+  "name":"org.openjdk.jmh.infra.IterationParamsL0",
+  "fields":[{"name":"markerBegin"}]
+},
+{
+  "name":"org.openjdk.jmh.infra.IterationParamsL1",
+  "fields":[{"name":"markerBegin"}]
+},
+{
+  "name":"org.openjdk.jmh.infra.IterationParamsL2",
+  "fields":[{"name":"batchSize"}, {"name":"count"}, {"name":"markerBegin"}, {"name":"timeValue"}, {"name":"type"}]
+},
+{
+  "name":"org.openjdk.jmh.infra.IterationParamsL3",
+  "fields":[{"name":"batchSize"}, {"name":"count"}, {"name":"markerBegin"}, {"name":"timeValue"}, {"name":"type"}]
+},
+{
+  "name":"org.openjdk.jmh.infra.IterationParamsL4",
+  "fields":[{"name":"batchSize"}, {"name":"count"}, {"name":"markerBegin"}, {"name":"markerEnd"}, {"name":"timeValue"}, {"name":"type"}]
+},
+{
+  "name":"org.openjdk.jmh.runner.format.OutputFormat",
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"close","parameterTypes":[] }, {"name":"flush","parameterTypes":[] }, {"name":"iteration","parameterTypes":["org.openjdk.jmh.infra.BenchmarkParams","org.openjdk.jmh.infra.IterationParams","int"] }, {"name":"iterationResult","parameterTypes":["org.openjdk.jmh.infra.BenchmarkParams","org.openjdk.jmh.infra.IterationParams","int","org.openjdk.jmh.results.IterationResult"] }]
+},
+{
+  "name":"org.openjdk.jmh.runner.options.TimeValue",
+  "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"sun.misc.Unsafe",
+  "fields":[{"name":"theUnsafe"}]
+},
+{
+  "name":"sun.security.provider.NativePRNG",
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
+},
+{
+  "name":"sun.security.provider.SHA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+}
+]
