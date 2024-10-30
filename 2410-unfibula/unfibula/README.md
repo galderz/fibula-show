@@ -15,7 +15,14 @@ $ NATIVE_AGENT=true make run-jvm
 $ make copy-native-config-runner
 $ make copy-native-config-forked
 $ make merge-native-config
+
+$ git status
+On branch main
+nothing to commit, working tree clean
 ```
+
+The worktree is clean, so the configurations seems to have been generated,
+and the merged version also remained the same.
 
 ### Experiment 004
 
