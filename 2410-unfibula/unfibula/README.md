@@ -2,6 +2,125 @@
 
 ## Research Progress
 
+### Experiment 003
+
+Run jvm mode with native agent to capture configuration.
+
+Initially tried to pass in `-agentlib:native-image-agent=config-output-dir=target/native-agent-config`,
+but that alone creates errors like this because JMH's runner and forked processes are trying to write into the same folder.
+
+```shell
+$ java -agentlib:native-image-agent=config-output-dir=target/native-agent-config -jar target/benchmarks.jar -f 1 -r 1 -w 1 -i 2 -wi 2
+native-image-agent: Error: Output directory 'target/native-agent-config' is locked by process 46094,
+which means another agent instance is already writing to this directory.
+Only one agent instance can safely write to a specific target directory at the same time.
+Unless file '.lock' is a leftover from an earlier process that terminated abruptly, it is unsafe to delete it.
+For running multiple processes with agents at the same time to create a single configuration,
+read AutomaticMetadataCollection.md or https://www.graalvm.org/dev/reference-manual/native-image/metadata/AutomaticMetadataCollection/ on how to use the native-image-configure tool. 
+```
+
+Looked at the documentation and passed `-agentlib:native-image-agent=config-output-dir=target/native-agent-config-{pid}-{datetime}` instead.
+That creates multiple folders, one of the runner process and another for the forked one:
+
+```shell
+NATIVE_AGENT=true m run-jvm
+JAVA_HOME=/Users/galder/opt/java-21 /Users/galder/opt/maven/bin/mvn package
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ------------------------< org.sample:unfibula >-------------------------
+[INFO] Building JMH benchmark sample: Java 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- resources:2.6:resources (default-resources) @ unfibula ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/galder/1/fibula-show/2410-unfibula/unfibula/src/main/resources
+[INFO]
+[INFO] --- compiler:3.8.0:compile (default-compile) @ unfibula ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/classes
+[INFO]
+[INFO] --- resources:2.6:testResources (default-testResources) @ unfibula ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/galder/1/fibula-show/2410-unfibula/unfibula/src/test/resources
+[INFO]
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ unfibula ---
+[INFO] No sources to compile
+[INFO]
+[INFO] --- surefire:2.17:test (default-test) @ unfibula ---
+[INFO] No tests to run.
+[INFO]
+[INFO] --- jar:2.4:jar (default-jar) @ unfibula ---
+[INFO] Building jar: /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/unfibula-1.0.jar
+[INFO]
+[INFO] --- shade:3.2.1:shade (default) @ unfibula ---
+[INFO] Including org.openjdk.jmh:jmh-core:jar:1.37 in the shaded jar.
+[INFO] Including net.sf.jopt-simple:jopt-simple:jar:5.0.4 in the shaded jar.
+[INFO] Including org.apache.commons:commons-math3:jar:3.6.1 in the shaded jar.
+[INFO] Replacing /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/benchmarks.jar with /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/unfibula-1.0-shaded.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.207 s
+[INFO] Finished at: 2024-10-30T11:30:26+01:00
+[INFO] ------------------------------------------------------------------------
+/Users/galder/opt/graal-21/bin/java -agentlib:native-image-agent=config-output-dir=target/native-agent-config-{pid}-{datetime} -jar target/benchmarks.jar -f 1 -r 1 -w 1 -i 2 -wi 2
+# JMH version: 1.37
+# VM version: JDK 21.0.2, OpenJDK 64-Bit Server VM, 21.0.2+13-jvmci-23.1-b30
+# VM invoker: /Users/galder/opt/graalvm-community-openjdk-21.0.2+13.1/Contents/Home/bin/java
+# VM options: -XX:ThreadPriorityPolicy=1 -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCIProduct -XX:-UnlockExperimentalVMOptions -agentlib:native-image-agent=config-output-dir=target/native-agent-config-{pid}-{datetime}
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 2 iterations, 1 s each
+# Measurement: 2 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.sample.MyBenchmark.testMethod
+
+# Run progress: 0.00% complete, ETA 00:00:04
+# Fork: 1 of 1
+OpenJDK 64-Bit Server VM warning: -XX:ThreadPriorityPolicy=1 may require system level permission, e.g., being the root user. If the necessary permission is not possessed, changes to priority will be silently ignored.
+# Warmup Iteration   1: 1777541732.645 ops/s
+# Warmup Iteration   2: 1773954859.471 ops/s
+Iteration   1: 1543273989.872 ops/s
+Iteration   2: 1773523240.089 ops/s
+
+
+Result "org.sample.MyBenchmark.testMethod":
+  1658398614.980 ops/s
+
+
+# Run complete. Total time: 00:00:04
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                Mode  Cnt           Score   Error  Units
+MyBenchmark.testMethod  thrpt    2  1658398614.980          ops/s
+
+$ ls target
+total 2.8M
+drwxr-xr-x 10 galder staff  320 Oct 30 11:30 .
+drwxr-xr-x  7 galder staff  224 Oct 30 11:30 ..
+drwxr-xr-x  4 galder staff  128 Oct 30 11:30 classes
+drwxr-xr-x  3 galder staff   96 Oct 30 11:30 generated-sources
+drwxr-xr-x  3 galder staff   96 Oct 30 11:30 maven-archiver
+drwxr-xr-x  3 galder staff   96 Oct 30 11:30 maven-status
+drwxr-xr-x  9 galder staff  288 Oct 30 11:30 native-agent-config-46609-20241030T103026Z
+drwxr-xr-x  9 galder staff  288 Oct 30 11:30 native-agent-config-46613-20241030T103026Z
+-rw-r--r--  1 galder staff 2.8M Oct 30 11:30 benchmarks.jar
+-rw-r--r--  1 galder staff  14K Oct 30 11:30 unfibula-1.0.jar
+```
+
 ### Experiment 002
 
 Add flag to avoid fallback:
