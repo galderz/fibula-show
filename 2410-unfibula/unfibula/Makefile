@@ -19,14 +19,17 @@ benchmarks_exec = target/benchmarks
 java = $(JAVA_HOME)/bin/java
 native_image = $(GRAALVM_HOME)/bin/native-image
 
+native_image_opts += --no-fallback
+
 mvnw += JAVA_HOME=$(JAVA_HOME)
 mvnw += $(MAVEN_HOME)/bin/mvn
 
-default: $(benchmarks_exec)
+run: $(benchmarks_exec)
+> $<
 
 $(benchmarks_exec): $(benchmarks_jar)
 > cd target
-> $(native_image) -jar benchmarks.jar
+> $(native_image) $(native_image_opts) -jar benchmarks.jar
 
 $(benchmarks_jar): $(shell find . -type f -name "*.java" ! -path "./*/target/*")
 $(benchmarks_jar): $(shell find . -type f -name "*.json" ! -path "./*/target/*")
