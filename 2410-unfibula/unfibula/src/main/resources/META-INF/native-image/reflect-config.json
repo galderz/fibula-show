@@ -55,22 +55,27 @@
 },
 {
   "name":"org.openjdk.jmh.infra.BenchmarkParamsL0",
+  "allDeclaredFields":true,
   "fields":[{"name":"markerBegin"}]
 },
 {
   "name":"org.openjdk.jmh.infra.BenchmarkParamsL1",
+  "allDeclaredFields":true,
   "fields":[{"name":"markerBegin"}]
 },
 {
   "name":"org.openjdk.jmh.infra.BenchmarkParamsL2",
+  "allDeclaredFields":true,
   "fields":[{"name":"benchmark"}, {"name":"forks"}, {"name":"generatedTarget"}, {"name":"jvm"}, {"name":"jvmArgs"}, {"name":"markerBegin"}, {"name":"measurement"}, {"name":"mode"}, {"name":"opsPerInvocation"}, {"name":"params"}, {"name":"synchIterations"}, {"name":"threadGroups"}, {"name":"threads"}, {"name":"timeUnit"}, {"name":"warmup"}, {"name":"warmupForks"}]
 },
 {
   "name":"org.openjdk.jmh.infra.BenchmarkParamsL3",
+  "allDeclaredFields":true,
   "fields":[{"name":"benchmark"}, {"name":"forks"}, {"name":"generatedTarget"}, {"name":"jvm"}, {"name":"jvmArgs"}, {"name":"markerBegin"}, {"name":"measurement"}, {"name":"mode"}, {"name":"opsPerInvocation"}, {"name":"params"}, {"name":"synchIterations"}, {"name":"threadGroups"}, {"name":"threads"}, {"name":"timeUnit"}, {"name":"warmup"}, {"name":"warmupForks"}]
 },
 {
   "name":"org.openjdk.jmh.infra.BenchmarkParamsL4",
+  "allDeclaredFields":true,
   "fields":[{"name":"benchmark"}, {"name":"forks"}, {"name":"generatedTarget"}, {"name":"jvm"}, {"name":"jvmArgs"}, {"name":"markerBegin"}, {"name":"markerEnd"}, {"name":"measurement"}, {"name":"mode"}, {"name":"opsPerInvocation"}, {"name":"params"}, {"name":"synchIterations"}, {"name":"threadGroups"}, {"name":"threads"}, {"name":"timeUnit"}, {"name":"warmup"}, {"name":"warmupForks"}]
 },
 {
@@ -127,22 +132,27 @@
 },
 {
   "name":"org.openjdk.jmh.infra.IterationParamsL0",
+  "allDeclaredFields":true,
   "fields":[{"name":"markerBegin"}]
 },
 {
   "name":"org.openjdk.jmh.infra.IterationParamsL1",
+  "allDeclaredFields":true,
   "fields":[{"name":"markerBegin"}]
 },
 {
   "name":"org.openjdk.jmh.infra.IterationParamsL2",
+  "allDeclaredFields":true,
   "fields":[{"name":"batchSize"}, {"name":"count"}, {"name":"markerBegin"}, {"name":"timeValue"}, {"name":"type"}]
 },
 {
   "name":"org.openjdk.jmh.infra.IterationParamsL3",
+  "allDeclaredFields":true,
   "fields":[{"name":"batchSize"}, {"name":"count"}, {"name":"markerBegin"}, {"name":"timeValue"}, {"name":"type"}]
 },
 {
   "name":"org.openjdk.jmh.infra.IterationParamsL4",
+  "allDeclaredFields":true,
   "fields":[{"name":"batchSize"}, {"name":"count"}, {"name":"markerBegin"}, {"name":"markerEnd"}, {"name":"timeValue"}, {"name":"type"}]
 },
 {
