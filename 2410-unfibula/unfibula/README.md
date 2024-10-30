@@ -2,6 +2,21 @@
 
 ## Research Progress
 
+### Experiment 005
+
+Is the generated native image configuration deterministic?
+That is, if neither the code nor the graalvm version changes,
+does repeated invocations of the agent generate the same configuration?
+
+Also, what happens with the merged configuration?
+
+```shell
+$ NATIVE_AGENT=true make run-jvm
+$ make copy-native-config-runner
+$ make copy-native-config-forked
+$ make merge-native-config
+```
+
 ### Experiment 004
 
 Merge native image configurations for runner and forked processes using `native-image-configure`,
