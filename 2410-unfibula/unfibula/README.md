@@ -7,7 +7,7 @@
 What happens if you take a stock build `benchmarks.jar` and try to produce a native image out of it?
 
 ```shell
-$ native-image -jar target/benchmarks.jar
+$ native-image -jar benchmarks.jar
 ========================================================================================================================
 GraalVM Native Image: Generating 'benchmarks' (executable)...
 ========================================================================================================================
