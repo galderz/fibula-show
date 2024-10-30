@@ -27,7 +27,7 @@ mvnw += $(MAVEN_HOME)/bin/mvn
 java_opts = 
 ifdef NATIVE_AGENT
   java = $(GRAALVM_HOME)/bin/java
-  java_opts += -agentlib:native-image-agent=config-output-dir=target/native-agent-config-{pid}-{datetime}
+  java_opts += -agentlib:native-image-agent=config-output-dir=target/native-agent-config-{pid}
 else
   java = $(JAVA_HOME)/bin/java
 endif
@@ -36,7 +36,7 @@ run: $(benchmarks_exec)
 > $<
 
 $(benchmarks_exec): $(benchmarks_jar)
-> $(native_image) $(native_image_opts) -jar $<
+> $(native_image) $(native_image_opts) -jar $< $(benchmarks_exec)
 
 $(benchmarks_jar): $(shell find . -type f -name "*.java" ! -path "./*/target/*")
 $(benchmarks_jar): $(shell find . -type f -name "*.json" ! -path "./*/target/*")
@@ -50,3 +50,35 @@ run-jvm: $(benchmarks_jar)
 clean:
 > $(mvnw) clean
 .PHONY: clean
+
+native_image_configure = $(GRAALVM_HOME)/bin/native-image-configure
+native_config_merged_dir = src/main/resources/META-INF/native-image
+native_config_runner_dir = src/main/resources/runner-native-config
+native_config_forked_dir = src/main/resources/forked-native-config
+
+copy-native-config-runner:
+> mkdir -p $(native_config_runner_dir)
+> @runner_dir=$$(ls -d target/native-agent-config-* | sort -V | head -n 1)
+> cp -r $$runner_dir/* $(native_config_runner_dir)
+
+copy-native-config-forked:
+> mkdir -p $(native_config_forked_dir)
+> @forked_dir=$$(ls -d target/native-agent-config-* | sort -V | head -n 2 | tail -n 1)
+> cp -r $$forked_dir/* $(native_config_forked_dir)
+
+merge-native-config:
+> mkdir -p $(native_config_merged_dir)
+> $(native_image_configure) \
+>   generate \
+>   --input-dir=$(native_config_runner_dir) \
+>   --input-dir=$(native_config_forked_dir) \
+>   --output-dir=$(native_config_merged_dir)
+.PHONY: merge-native-config
+
+first-directory:
+> @first_dir=$$(ls -d target/native-agent-config-* | sort -V | head -n 1)
+> echo "First directory: $$first_dir"
+
+second-directory:
+> @second_dir=$$(ls -d target/native-agent-config-* | sort -V | head -n 2 | tail -n 1)
+> echo "Second directory: $$second_dir"
