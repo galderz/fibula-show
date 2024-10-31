@@ -2,6 +2,54 @@
 
 ## Research Progress
 
+TODO:
+Repeat the experiments starting the jar and letting that kick off the binary.
+This should reduce the amount of native configuration required (nothing for runner),
+leaving only the forked native configuration.
+
+### Experiment 007
+
+Try to pass in `-jvm` to point to the binary and see how that behaves:
+
+```shell
+target/benchmarks -jvm target/benchmarks
+Exception in thread "main" java.lang.RuntimeException: Unable to extract forked JVM properties using: 'target/benchmarks -cp  org.openjdk.jmh.runner.PrintPropertiesMain'; [Exception in thread "main" java.util.MissingResourceException: Can't find bundle for base name joptsimple.ExceptionMessages, locale en_001
+	at java.base@21.0.2/java.util.ResourceBundle.throwMissingResourceException(ResourceBundle.java:2059)
+	at java.base@21.0.2/java.util.ResourceBundle.getBundleImpl(ResourceBundle.java:1697)
+	at java.base@21.0.2/java.util.ResourceBundle.getBundleImpl(ResourceBundle.java:1600)
+	at java.base@21.0.2/java.util.ResourceBundle.getBundleImpl(ResourceBundle.java:1555)
+	at java.base@21.0.2/java.util.ResourceBundle.getBundle(ResourceBundle.java:935)
+	at joptsimple.internal.Messages.message(Messages.java:41)
+	at joptsimple.OptionException.formattedMessage(OptionException.java:121)
+	at joptsimple.OptionException.localizedMessage(OptionException.java:117)
+	at joptsimple.OptionException.getMessage(OptionException.java:113)
+	at org.openjdk.jmh.runner.options.CommandLineOptions.<init>(CommandLineOptions.java:403)
+	at org.openjdk.jmh.Main.main(Main.java:41)
+	at java.base@21.0.2/java.lang.invoke.LambdaForm$DMH/sa346b79c.invokeStaticInit(LambdaForm$DMH)
+]
+	at org.openjdk.jmh.util.Utils.readPropertiesFromCommand(Utils.java:588)
+	at org.openjdk.jmh.runner.Runner.newBenchmarkParams(Runner.java:468)
+	at org.openjdk.jmh.runner.Runner.getActionPlans(Runner.java:352)
+	at org.openjdk.jmh.runner.Runner.runBenchmarks(Runner.java:543)
+	at org.openjdk.jmh.runner.Runner.internalRun(Runner.java:309)
+	at org.openjdk.jmh.runner.Runner.run(Runner.java:208)
+	at org.openjdk.jmh.Main.main(Main.java:71)
+	at java.base@21.0.2/java.lang.invoke.LambdaForm$DMH/sa346b79c.invokeStaticInit(LambdaForm$DMH)
+make: *** [Makefile:47: run] Error 1
+```
+
+It fails unable to extra forked JVM properties out of the binary.
+
+Running the jar file and passing in the native binary,
+e.g. `java -jar target/benchmarks.jar -jvm target/benchmarks`
+throws the same error above.
+
+How does Fibula get around this?
+It does so by swapping the `BenchmarkParameters.jvm` field value at a later stage.
+When native Fibula starts, the `jvm` value is still the same value as the runner,
+and then before starting the actual benchmark is the moment when `jvm` and VM fields are swapped.
+To do this swapping, the runner main class needs to be swapped.
+
 ### Experiment 006
 
 To resolve the `IllegalStateException` additional native image configuration is required.
