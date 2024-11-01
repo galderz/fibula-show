@@ -2,6 +2,158 @@
 
 ## Research Progress
 
+### Experiment 010
+
+Configure native image invocation so that `org.openjdk.jmh.runner.ForkedMain` runs in the forked process
+rather than `org.mendrugo.fibula.RunnerMain`.
+To do that, switch the `native-image` invocation from `-jar <jar>`
+to `-cp <jar> org.openjdk.jmh.runner.ForkedMain`:
+
+```shell
+$ make
+JAVA_HOME=/Users/galder/opt/java-21 /Users/galder/opt/maven/bin/mvn package
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ------------------------< org.sample:unfibula >-------------------------
+[INFO] Building JMH benchmark sample: Java 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- resources:2.6:resources (default-resources) @ unfibula ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 12 resources
+[INFO]
+[INFO] --- compiler:3.8.0:compile (default-compile) @ unfibula ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 4 source files to /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/classes
+[INFO]
+[INFO] --- resources:2.6:testResources (default-testResources) @ unfibula ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/galder/1/fibula-show/2410-unfibula/unfibula/src/test/resources
+[INFO]
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ unfibula ---
+[INFO] No sources to compile
+[INFO]
+[INFO] --- surefire:2.17:test (default-test) @ unfibula ---
+[INFO] No tests to run.
+[INFO]
+[INFO] --- jar:2.4:jar (default-jar) @ unfibula ---
+[INFO] Building jar: /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/unfibula-1.0.jar
+[INFO]
+[INFO] --- shade:3.2.1:shade (default) @ unfibula ---
+[INFO] Including org.openjdk.jmh:jmh-core:jar:1.37 in the shaded jar.
+[INFO] Including net.sf.jopt-simple:jopt-simple:jar:5.0.4 in the shaded jar.
+[INFO] Including org.apache.commons:commons-math3:jar:3.6.1 in the shaded jar.
+[INFO] Replacing /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/benchmarks.jar with /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/unfibula-1.0-shaded.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.432 s
+[INFO] Finished at: 2024-11-01T11:56:02+01:00
+[INFO] ------------------------------------------------------------------------
+/Users/galder/opt/graal-21/bin/native-image --no-fallback -cp target/benchmarks.jar org.openjdk.jmh.runner.ForkedMain target/benchmarks
+========================================================================================================================
+GraalVM Native Image: Generating 'benchmarks' (executable)...
+========================================================================================================================
+[1/8] Initializing...                                                                                    (3.2s @ 0.09GB)
+ Java version: 21.0.2+13, vendor version: GraalVM CE 21.0.2+13.1
+ Graal compiler: optimization level: 2, target machine: armv8-a
+ C compiler: cc (apple, arm64, 15.0.0)
+ Garbage collector: Serial GC (max heap size: 80% of RAM)
+ 1 user-specific feature(s):
+ - com.oracle.svm.thirdparty.gson.GsonFeature
+------------------------------------------------------------------------------------------------------------------------
+Build resources:
+ - 24.18GB of memory (75.6% of 32.00GB system memory, determined at start)
+ - 10 thread(s) (100.0% of 10 available processor(s), determined at start)
+[2/8] Performing analysis...  [***]                                                                      (6.7s @ 0.32GB)
+    4,195 reachable types   (76.4% of    5,488 total)
+    5,580 reachable fields  (43.9% of   12,721 total)
+   20,487 reachable methods (49.3% of   41,543 total)
+    1,402 types,   686 fields, and 2,133 methods registered for reflection
+       63 types,    69 fields, and    59 methods registered for JNI access
+        5 native libraries: -framework CoreServices, -framework Foundation, dl, pthread, z
+[3/8] Building universe...                                                                               (1.1s @ 0.42GB)
+[4/8] Parsing methods...      [*]                                                                        (0.7s @ 0.42GB)
+[5/8] Inlining methods...     [***]                                                                      (0.5s @ 0.47GB)
+[6/8] Compiling methods...    [***]                                                                      (6.0s @ 0.36GB)
+[7/8] Layouting methods...    [*]                                                                        (1.0s @ 0.49GB)
+[8/8] Creating image...       [**]                                                                       (2.1s @ 0.40GB)
+   7.16MB (39.76%) for code area:    12,406 compilation units
+  10.41MB (57.77%) for image heap:  128,225 objects and 47 resources
+ 455.63kB ( 2.47%) for other data
+  18.01MB in total
+------------------------------------------------------------------------------------------------------------------------
+Top 10 origins of code area:                                Top 10 object types in image heap:
+   5.17MB java.base                                            2.25MB byte[] for code metadata
+   1.10MB svm.jar (Native Image)                               1.72MB byte[] for java.lang.String
+ 449.01kB benchmarks.jar                                       1.25MB java.lang.String
+ 110.50kB java.logging                                       979.12kB java.lang.Class
+  56.80kB org.graalvm.nativeimage.base                       535.10kB heap alignment
+  50.59kB jdk.proxy1                                         360.51kB com.oracle.svm.core.hub.DynamicHubCompanion
+  48.74kB jdk.proxy3                                         312.11kB byte[] for reflection metadata
+  25.57kB jdk.net                                            296.18kB byte[] for general heap data
+  24.47kB jdk.internal.reflect                               268.73kB java.util.HashMap$Node
+  21.98kB org.graalvm.collections                            254.02kB java.lang.Object[]
+  54.91kB for 7 more packages                                  2.26MB for 1119 more object types
+------------------------------------------------------------------------------------------------------------------------
+Recommendations:
+ INIT: Adopt '--strict-image-heap' to prepare for the next GraalVM release.
+ HEAP: Set max heap for improved and more predictable memory usage.
+ CPU:  Enable more CPU features with '-march=native' for improved performance.
+------------------------------------------------------------------------------------------------------------------------
+                        1.6s (7.2% of total time) in 295 GCs | Peak RSS: 1.01GB | CPU load: 6.43
+------------------------------------------------------------------------------------------------------------------------
+Produced artifacts:
+ /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/benchmarks (executable)
+========================================================================================================================
+Finished generating 'benchmarks' in 21.7s.
+/Users/galder/opt/java-21/bin/java  -jar target/benchmarks.jar -f 1 -r 1 -w 1 -i 2 -wi 2
+# JMH version: fibula:999-SNAPSHOT
+# VM version: JDK 21.0.2, Substrate VM, GraalVM CE 21.0.2+13.1
+# *** WARNING: This VM is not supported by JMH. The produced benchmark data can be completely wrong.
+# VM invoker: target/benchmarks
+# VM options: <none>
+# Compiler hints: disabled (Forced off)
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 2 iterations, 1 s each
+# Measurement: 2 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.sample.MyBenchmark.testMethod
+
+# Run progress: 0.00% complete, ETA 00:00:04
+# Fork: 1 of 1
+Exception in thread "main" java.lang.IllegalArgumentException: Expected two arguments for forked VM
+	at org.openjdk.jmh.runner.ForkedMain.main(ForkedMain.java:56)
+	at java.base@21.0.2/java.lang.invoke.LambdaForm$DMH/sa346b79c.invokeStaticInit(LambdaForm$DMH)
+<forked VM failed with exit code 1>
+<stdout last='20 lines'>
+</stdout>
+<stderr last='20 lines'>
+Exception in thread "main" java.lang.IllegalArgumentException: Expected two arguments for forked VM
+	at org.openjdk.jmh.runner.ForkedMain.main(ForkedMain.java:56)
+	at java.base@21.0.2/java.lang.invoke.LambdaForm$DMH/sa346b79c.invokeStaticInit(LambdaForm$DMH)
+</stderr>
+
+# Run complete. Total time: 00:00:00
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark  Mode  Cnt  Score   Error  Units
+```
+
 ### Experiment 009
 
 Swap the runner main for a custom one that allows switching the native executable after the call to `Utils.readPropertiesFromCommand`.
