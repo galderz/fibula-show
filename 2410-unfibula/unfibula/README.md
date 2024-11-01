@@ -2,10 +2,134 @@
 
 ## Research Progress
 
-TODO:
-Repeat the experiments starting the jar and letting that kick off the binary.
-This should reduce the amount of native configuration required (nothing for runner),
-leaving only the forked native configuration.
+### Experiment 008
+
+Stop running the native executable directly.
+Instead, start with the jar so that the runner runs in JVM mode,
+and let future customizations on the runner decide whether to run the forked main as jvm or native executable.
+This means that there's no longer need for runner native configuration.
+Merging will still be needed because additional forked configuration will be required.
+
+Here is a runner in JVM mode manually tweaked to use the binary as jvm.
+This doesn't work because the jvm setting needs to be done later,
+e.g. via ~OutputFormat.startBenchmark~ that the original prototype does:
+
+```shell
+$ make
+JAVA_HOME=/Users/galder/opt/java-21 /Users/galder/opt/maven/bin/mvn package
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ------------------------< org.sample:unfibula >-------------------------
+[INFO] Building JMH benchmark sample: Java 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- resources:2.6:resources (default-resources) @ unfibula ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 24 resources
+[INFO]
+[INFO] --- compiler:3.8.0:compile (default-compile) @ unfibula ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/classes
+[INFO]
+[INFO] --- resources:2.6:testResources (default-testResources) @ unfibula ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/galder/1/fibula-show/2410-unfibula/unfibula/src/test/resources
+[INFO]
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ unfibula ---
+[INFO] No sources to compile
+[INFO]
+[INFO] --- surefire:2.17:test (default-test) @ unfibula ---
+[INFO] No tests to run.
+[INFO]
+[INFO] --- jar:2.4:jar (default-jar) @ unfibula ---
+[INFO] Building jar: /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/unfibula-1.0.jar
+[INFO]
+[INFO] --- shade:3.2.1:shade (default) @ unfibula ---
+[INFO] Including org.openjdk.jmh:jmh-core:jar:1.37 in the shaded jar.
+[INFO] Including net.sf.jopt-simple:jopt-simple:jar:5.0.4 in the shaded jar.
+[INFO] Including org.apache.commons:commons-math3:jar:3.6.1 in the shaded jar.
+[INFO] Replacing /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/benchmarks.jar with /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/unfibula-1.0-shaded.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.284 s
+[INFO] Finished at: 2024-11-01T09:26:32+01:00
+[INFO] ------------------------------------------------------------------------
+/Users/galder/opt/graal-21/bin/native-image --no-fallback -jar target/benchmarks.jar target/benchmarks
+========================================================================================================================
+GraalVM Native Image: Generating 'benchmarks' (executable)...
+========================================================================================================================
+[1/8] Initializing...                                                                                    (2.7s @ 0.09GB)
+ Java version: 21.0.2+13, vendor version: GraalVM CE 21.0.2+13.1
+ Graal compiler: optimization level: 2, target machine: armv8-a
+ C compiler: cc (apple, arm64, 15.0.0)
+ Garbage collector: Serial GC (max heap size: 80% of RAM)
+ 1 user-specific feature(s):
+ - com.oracle.svm.thirdparty.gson.GsonFeature
+------------------------------------------------------------------------------------------------------------------------
+Build resources:
+ - 24.18GB of memory (75.6% of 32.00GB system memory, determined at start)
+ - 10 thread(s) (100.0% of 10 available processor(s), determined at start)
+[2/8] Performing analysis...  [****]                                                                     (7.8s @ 0.41GB)
+    4,790 reachable types   (78.7% of    6,083 total)
+    6,561 reachable fields  (46.6% of   14,072 total)
+   23,434 reachable methods (51.2% of   45,747 total)
+    1,664 types,   688 fields, and 2,270 methods registered for reflection
+       64 types,    71 fields, and    59 methods registered for JNI access
+        5 native libraries: -framework CoreServices, -framework Foundation, dl, pthread, z
+[3/8] Building universe...                                                                               (1.2s @ 0.44GB)
+[4/8] Parsing methods...      [*]                                                                        (0.7s @ 0.55GB)
+[5/8] Inlining methods...     [***]                                                                      (0.7s @ 0.37GB)
+[6/8] Compiling methods...    [***]                                                                      (6.6s @ 0.44GB)
+[7/8] Layouting methods...    [*]                                                                        (1.4s @ 0.47GB)
+[8/8] Creating image...       [**]                                                                       (2.2s @ 0.51GB)
+   8.77MB (42.44%) for code area:    14,381 compilation units
+  11.41MB (55.20%) for image heap:  141,292 objects and 48 resources
+ 498.77kB ( 2.36%) for other data
+  20.66MB in total
+------------------------------------------------------------------------------------------------------------------------
+Top 10 origins of code area:                                Top 10 object types in image heap:
+   6.34MB java.base                                            2.75MB byte[] for code metadata
+   1.13MB svm.jar (Native Image)                               1.88MB byte[] for java.lang.String
+ 797.36kB benchmarks.jar                                       1.37MB java.lang.String
+ 114.46kB java.logging                                         1.10MB java.lang.Class
+  56.80kB org.graalvm.nativeimage.base                       411.64kB com.oracle.svm.core.hub.DynamicHubCompanion
+  50.59kB jdk.proxy1                                         344.47kB byte[] for reflection metadata
+  48.91kB jdk.crypto.ec                                      304.68kB byte[] for general heap data
+  48.74kB jdk.proxy3                                         278.11kB java.util.HashMap$Node
+  25.57kB jdk.net                                            274.10kB java.lang.String[]
+  24.47kB jdk.internal.reflect                               267.23kB heap alignment
+  76.98kB for 8 more packages                                  2.46MB for 1184 more object types
+------------------------------------------------------------------------------------------------------------------------
+Recommendations:
+ INIT: Adopt '--strict-image-heap' to prepare for the next GraalVM release.
+ HEAP: Set max heap for improved and more predictable memory usage.
+ CPU:  Enable more CPU features with '-march=native' for improved performance.
+------------------------------------------------------------------------------------------------------------------------
+                        1.9s (8.0% of total time) in 249 GCs | Peak RSS: 1.06GB | CPU load: 6.42
+------------------------------------------------------------------------------------------------------------------------
+Produced artifacts:
+ /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/benchmarks (executable)
+========================================================================================================================
+Finished generating 'benchmarks' in 23.8s.
+/Users/galder/opt/java-21/bin/java  -jar target/benchmarks.jar -jvm target/benchmarks
+Exception in thread "main" java.lang.RuntimeException: Unable to extract forked JVM properties using: 'target/benchmarks -cp target/benchmarks.jar org.openjdk.jmh.runner.PrintPropertiesMain'; [Exception in thread "main" java.lang.IllegalArgumentException: class java.lang.Boolean is not a value type
+	at joptsimple.internal.Reflection.findConverter(Reflection.java:66)
+	at joptsimple.ArgumentAcceptingOptionSpec.ofType(ArgumentAcceptingOptionSpec.java:106)
+	at org.openjdk.jmh.runner.options.CommandLineOptions.<init>(CommandLineOptions.java:146)
+	at org.openjdk.jmh.Main.main(Main.java:41)
+	at java.base@21.0.2/java.lang.invoke.LambdaForm$DMH/sa346b79c.invokeStaticInit(LambdaForm$DMH)
+]
+	at org.openjdk.jmh.util.Utils.readPropertiesFromCommand(Utils.java:588)
+	at org.openjdk.jmh.runner.Runner.newBenchmarkParams(Runner.java:468)
+	at org.openjdk.jmh.runner.Runner.getActionPlans(Runner.java:352)
+	at org.openjdk.jmh.runner.Runner.runBenchmarks(Runner.java:543)
+	at org.openjdk.jmh.runner.Runner.internalRun(Runner.java:309)
+	at org.openjdk.jmh.runner.Runner.run(Runner.java:208)
+	at org.openjdk.jmh.Main.main(Main.java:71)
+make: *** [Makefile:36: run] Error 1
+```
 
 ### Experiment 007
 

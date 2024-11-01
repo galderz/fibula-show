@@ -33,7 +33,7 @@ else
 endif
 
 run: $(benchmarks_exec)
-> $<
+> $(java) $(java_opts) -jar $(benchmarks_jar) -jvm $<
 
 $(benchmarks_exec): $(benchmarks_jar)
 > $(native_image) $(native_image_opts) -jar $< $(benchmarks_exec)
@@ -71,8 +71,6 @@ merge-native-config:
 > mkdir -p $(native_config_merged_dir)
 > $(native_image_configure) \
 >   generate \
->   --input-dir=$(native_config_runner_agent_dir) \
->   --input-dir=$(native_config_runner_additional_dir) \
 >   --input-dir=$(native_config_forked_agent_dir) \
 >   --output-dir=$(native_config_merged_dir)
 .PHONY: merge-native-config
