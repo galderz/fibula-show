@@ -66,9 +66,8 @@ clean:
 
 native_image_configure = $(GRAALVM_HOME)/bin/native-image-configure
 native_config_merged_dir = src/main/resources/META-INF/native-image
-native_config_runner_agent_dir = src/main/resources/runner-agent-native-config
-native_config_runner_additional_dir = src/main/resources/runner-additional-native-config
 native_config_forked_agent_dir = src/main/resources/forked-agent-native-config
+native_config_forked_additional_dir = src/main/resources/forked-additional-native-config
 
 copy-native-config-agent-runner:
 > mkdir -p $(native_config_runner_agent_dir)
@@ -85,5 +84,6 @@ merge-native-config:
 > $(native_image_configure) \
 >   generate \
 >   --input-dir=$(native_config_forked_agent_dir) \
+>   --input-dir=$(native_config_forked_additional_dir) \
 >   --output-dir=$(native_config_merged_dir)
 .PHONY: merge-native-config

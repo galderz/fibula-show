@@ -2,6 +2,202 @@
 
 ## Research Progress
 
+TODO remove reflection configuration to user defined benchmarks,
+this should be derived from the app rather than being statically defined.
+^ does fibula register the jmhStub method calls for reflection?
+double check what happens here
+
+### Experiment 012
+
+Add additional reflection configuration to forked main to avoid errors:
+
+```shell
+$ /Users/galder/opt/java-21/bin/java  -jar target/benchmarks.jar -f 1 -r 1 -w 1 -i 2 -wi 2
+# JMH version: fibula:999-SNAPSHOT
+# VM version: JDK 21.0.2, Substrate VM, GraalVM CE 21.0.2+13.1
+# *** WARNING: This VM is not supported by JMH. The produced benchmark data can be completely wrong.
+# VM invoker: target/benchmarks
+# VM options: <none>
+# Compiler hints: disabled (Forced off)
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 2 iterations, 1 s each
+# Measurement: 2 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.sample.MyBenchmark.testMethod
+
+# Run progress: 0.00% complete, ETA 00:00:04
+# Fork: 1 of 1
+# Warmup Iteration   1: <failure>
+
+java.lang.ExceptionInInitializerError
+	at org.openjdk.jmh.runner.BenchmarkHandler.runIteration(BenchmarkHandler.java:322)
+	at org.openjdk.jmh.runner.BaseRunner.runBenchmark(BaseRunner.java:262)
+	at org.openjdk.jmh.runner.BaseRunner.runBenchmark(BaseRunner.java:233)
+	at org.openjdk.jmh.runner.BaseRunner.doSingle(BaseRunner.java:138)
+	at org.openjdk.jmh.runner.BaseRunner.runBenchmarksForked(BaseRunner.java:75)
+	at org.openjdk.jmh.runner.ForkedRunner.run(ForkedRunner.java:72)
+	at org.openjdk.jmh.runner.ForkedMain.main(ForkedMain.java:86)
+	at java.base@21.0.2/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.mendrugo.fibula.SwitchingForkedMain.main(SwitchingForkedMain.java:21)
+	at java.base@21.0.2/java.lang.invoke.LambdaForm$DMH/sa346b79c.invokeStaticInit(LambdaForm$DMH)
+Caused by: java.lang.IllegalStateException: Consistency check failed for startMeasurement, off = 16, markerBegin = 12, markerEnd = 20
+	at org.openjdk.jmh.util.Utils.check(Utils.java:375)
+	at org.openjdk.jmh.util.Utils.check(Utils.java:365)
+	at org.openjdk.jmh.infra.Control.<clinit>(Control.java:40)
+	... 10 more
+```
+
+Adding individual fields for reflection is not enough.
+All fields and padding are required in order to make sure objects are spaced out in caches.
+Set `allDeclaredFields` to true for types as needed at runtime,
+e.g. `BenchmarkParamsL[0-4]`, `IterationParamsL[0-4]`, `InfraControlL[0-4]`...etc.
+After adding these, first successful run:
+
+```shell
+m
+JAVA_HOME=/Users/galder/opt/java-21 /Users/galder/opt/maven/bin/mvn package
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ------------------------< org.sample:unfibula >-------------------------
+[INFO] Building JMH benchmark sample: Java 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- resources:2.6:resources (default-resources) @ unfibula ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 18 resources
+[INFO]
+[INFO] --- compiler:3.8.0:compile (default-compile) @ unfibula ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO]
+[INFO] --- resources:2.6:testResources (default-testResources) @ unfibula ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/galder/1/fibula-show/2410-unfibula/unfibula/src/test/resources
+[INFO]
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ unfibula ---
+[INFO] No sources to compile
+[INFO]
+[INFO] --- surefire:2.17:test (default-test) @ unfibula ---
+[INFO] No tests to run.
+[INFO]
+[INFO] --- jar:2.4:jar (default-jar) @ unfibula ---
+[INFO] Building jar: /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/unfibula-1.0.jar
+[INFO]
+[INFO] --- shade:3.2.1:shade (default) @ unfibula ---
+[INFO] Including org.openjdk.jmh:jmh-core:jar:1.37 in the shaded jar.
+[INFO] Including net.sf.jopt-simple:jopt-simple:jar:5.0.4 in the shaded jar.
+[INFO] Including org.apache.commons:commons-math3:jar:3.6.1 in the shaded jar.
+[INFO] Replacing /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/benchmarks.jar with /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/unfibula-1.0-shaded.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  0.855 s
+[INFO] Finished at: 2024-11-01T22:15:50+01:00
+[INFO] ------------------------------------------------------------------------
+$ /Users/galder/opt/graal-21/bin/native-image --no-fallback -cp target/benchmarks.jar org.mendrugo.fibula.SwitchingForkedMain target/benchmarks
+========================================================================================================================
+GraalVM Native Image: Generating 'benchmarks' (executable)...
+========================================================================================================================
+[1/8] Initializing...                                                                                    (2.8s @ 0.09GB)
+ Java version: 21.0.2+13, vendor version: GraalVM CE 21.0.2+13.1
+ Graal compiler: optimization level: 2, target machine: armv8-a
+ C compiler: cc (apple, arm64, 15.0.0)
+ Garbage collector: Serial GC (max heap size: 80% of RAM)
+ 1 user-specific feature(s):
+ - com.oracle.svm.thirdparty.gson.GsonFeature
+------------------------------------------------------------------------------------------------------------------------
+Build resources:
+ - 24.18GB of memory (75.6% of 32.00GB system memory, determined at start)
+ - 10 thread(s) (100.0% of 10 available processor(s), determined at start)
+[2/8] Performing analysis...  [***]                                                                      (6.6s @ 0.38GB)
+    4,196 reachable types   (76.4% of    5,489 total)
+    6,863 reachable fields  (54.0% of   12,721 total)
+   20,488 reachable methods (49.4% of   41,502 total)
+    1,402 types, 1,972 fields, and 2,133 methods registered for reflection
+       63 types,    69 fields, and    59 methods registered for JNI access
+        5 native libraries: -framework CoreServices, -framework Foundation, dl, pthread, z
+[3/8] Building universe...                                                                               (1.1s @ 0.43GB)
+[4/8] Parsing methods...      [*]                                                                        (0.7s @ 0.43GB)
+[5/8] Inlining methods...     [***]                                                                      (0.5s @ 0.46GB)
+[6/8] Compiling methods...    [***]                                                                      (6.1s @ 0.41GB)
+[7/8] Layouting methods...    [*]                                                                        (1.1s @ 0.46GB)
+[8/8] Creating image...       [**]                                                                       (2.2s @ 0.35GB)
+   7.16MB (39.65%) for code area:    12,407 compilation units
+  10.45MB (57.88%) for image heap:  128,511 objects and 47 resources
+ 456.24kB ( 2.47%) for other data
+  18.06MB in total
+------------------------------------------------------------------------------------------------------------------------
+Top 10 origins of code area:                                Top 10 object types in image heap:
+   5.17MB java.base                                            2.25MB byte[] for code metadata
+   1.10MB svm.jar (Native Image)                               1.72MB byte[] for java.lang.String
+ 449.93kB benchmarks.jar                                       1.25MB java.lang.String
+ 110.50kB java.logging                                       979.31kB java.lang.Class
+  56.80kB org.graalvm.nativeimage.base                       512.46kB heap alignment
+  50.59kB jdk.proxy1                                         363.30kB byte[] for reflection metadata
+  48.74kB jdk.proxy3                                         360.59kB com.oracle.svm.core.hub.DynamicHubCompanion
+  25.57kB jdk.net                                            296.27kB byte[] for general heap data
+  24.47kB jdk.internal.reflect                               268.73kB java.util.HashMap$Node
+  21.98kB org.graalvm.collections                            254.02kB java.lang.Object[]
+  54.91kB for 7 more packages                                  2.26MB for 1119 more object types
+------------------------------------------------------------------------------------------------------------------------
+Recommendations:
+ INIT: Adopt '--strict-image-heap' to prepare for the next GraalVM release.
+ HEAP: Set max heap for improved and more predictable memory usage.
+ CPU:  Enable more CPU features with '-march=native' for improved performance.
+------------------------------------------------------------------------------------------------------------------------
+                        1.6s (7.5% of total time) in 189 GCs | Peak RSS: 1.07GB | CPU load: 6.44
+------------------------------------------------------------------------------------------------------------------------
+Produced artifacts:
+ /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/benchmarks (executable)
+========================================================================================================================
+Finished generating 'benchmarks' in 21.3s.
+$ /Users/galder/opt/java-21/bin/java  -jar target/benchmarks.jar -f 1 -r 1 -w 1 -i 2 -wi 2
+# JMH version: fibula:999-SNAPSHOT
+# VM version: JDK 21.0.2, Substrate VM, GraalVM CE 21.0.2+13.1
+# *** WARNING: This VM is not supported by JMH. The produced benchmark data can be completely wrong.
+# VM invoker: target/benchmarks
+# VM options: <none>
+# Compiler hints: disabled (Forced off)
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 2 iterations, 1 s each
+# Measurement: 2 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.sample.MyBenchmark.testMethod
+
+# Run progress: 0.00% complete, ETA 00:00:04
+# Fork: 1 of 1
+# Warmup Iteration   1: 1307862610.861 ops/s
+# Warmup Iteration   2: 1326771176.880 ops/s
+Iteration   1: 1311239858.287 ops/s
+Iteration   2: 1316387109.099 ops/s
+
+
+Result "org.sample.MyBenchmark.testMethod":
+  1313813483.693 ops/s
+
+
+# Run complete. Total time: 00:00:04
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                Mode  Cnt           Score   Error  Units
+MyBenchmark.testMethod  thrpt    2  1313813483.693          ops/s
+```
+
 ### Experiment 011
 
 Switched `org.openjdk.jmh.runner.ForkedMain` invocation for a custom main
