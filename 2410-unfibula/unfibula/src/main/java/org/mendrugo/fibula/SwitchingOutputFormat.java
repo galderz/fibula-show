@@ -21,11 +21,11 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.util.Collection;
 
-final class RunnerOutputFormat implements OutputFormat
+final class SwitchingOutputFormat implements OutputFormat
 {
     private final OutputFormat out;
 
-    RunnerOutputFormat(Options options)
+    SwitchingOutputFormat(Options options)
     {
         this.out = createOutputFormat(options);
     }

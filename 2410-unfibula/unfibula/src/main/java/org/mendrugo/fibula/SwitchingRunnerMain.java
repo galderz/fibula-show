@@ -11,7 +11,7 @@ import org.openjdk.jmh.runner.options.VerboseMode;
 
 import java.io.IOException;
 
-public class RunnerMain
+public class SwitchingRunnerMain
 {
     public static void main(String[] args) throws IOException
     {
@@ -19,7 +19,7 @@ public class RunnerMain
         {
             final CommandLineOptions cmdOptions = new CommandLineOptions(args);
 
-            final Runner runner = new Runner(cmdOptions, new RunnerOutputFormat(cmdOptions));
+            final Runner runner = new Runner(cmdOptions, new SwitchingOutputFormat(cmdOptions));
 
             if (cmdOptions.shouldHelp())
             {
