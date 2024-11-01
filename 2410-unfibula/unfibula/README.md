@@ -154,6 +154,61 @@ modes can be very significant. Please make sure you use the consistent Blackhole
 Benchmark  Mode  Cnt  Score   Error  Units
 ```
 
+The number of arguments seems to be wrong.
+Add verbose logging to the JMH invocation to find out what exactly is being called now:
+
+```shell
+/Users/galder/opt/java-21/bin/java  -jar target/benchmarks.jar -f 1 -r 1 -w 1 -i 2 -wi 2 -v EXTRA
+# JMH version: fibula:999-SNAPSHOT
+# VM version: JDK 21.0.2, Substrate VM, GraalVM CE 21.0.2+13.1
+# *** WARNING: This VM is not supported by JMH. The produced benchmark data can be completely wrong.
+# VM invoker: target/benchmarks
+# VM options: <none>
+# Compiler hints: disabled (Forced off)
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 2 iterations, 1 s each
+# Measurement: 2 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.sample.MyBenchmark.testMethod
+
+# Run progress: 0.00% complete, ETA 00:00:04
+Forking using command: [target/benchmarks, -cp, target/benchmarks.jar, org.openjdk.jmh.runner.ForkedMain, 127.0.0.1, 59208]
+# Fork: 1 of 1
+Exception in thread "main" java.lang.IllegalArgumentException: Expected two arguments for forked VM
+	at org.openjdk.jmh.runner.ForkedMain.main(ForkedMain.java:56)
+	at java.base@21.0.2/java.lang.invoke.LambdaForm$DMH/sa346b79c.invokeStaticInit(LambdaForm$DMH)
+<forked VM failed with exit code 1>
+<stdout last='20 lines'>
+</stdout>
+<stderr last='20 lines'>
+Exception in thread "main" java.lang.IllegalArgumentException: Expected two arguments for forked VM
+	at org.openjdk.jmh.runner.ForkedMain.main(ForkedMain.java:56)
+	at java.base@21.0.2/java.lang.invoke.LambdaForm$DMH/sa346b79c.invokeStaticInit(LambdaForm$DMH)
+</stderr>
+
+# Run complete. Total time: 00:00:00
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark  Mode  Cnt  Score   Error  Units
+```
+
+Similar to what was done in previous Fibula experiments,
+a custom main class is needed for the forked process to grab only the last 2 parameters,
+and ignore any others.
+
 ### Experiment 009
 
 Swap the runner main for a custom one that allows switching the native executable after the call to `Utils.readPropertiesFromCommand`.
