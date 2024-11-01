@@ -2,6 +2,196 @@
 
 ## Research Progress
 
+### Experiment 011
+
+Switched `org.openjdk.jmh.runner.ForkedMain` invocation for a custom main
+that can remove additional arguments unnecessary for `ForkedMain`.
+Created the class `org.mendrugo.fibula.SwitchingForkedMain`,
+removed the unnecessary arguments and tried again:
+
+```shell
+$ /Users/galder/opt/graal-21/bin/native-image --no-fallback -cp target/benchmarks.jar org.mendrugo.fibula.SwitchingForkedMain target/benchmarks
+========================================================================================================================
+GraalVM Native Image: Generating 'benchmarks' (executable)...
+========================================================================================================================
+[1/8] Initializing...                                                                                    (3.1s @ 0.09GB)
+ Java version: 21.0.2+13, vendor version: GraalVM CE 21.0.2+13.1
+ Graal compiler: optimization level: 2, target machine: armv8-a
+ C compiler: cc (apple, arm64, 15.0.0)
+ Garbage collector: Serial GC (max heap size: 80% of RAM)
+ 1 user-specific feature(s):
+ - com.oracle.svm.thirdparty.gson.GsonFeature
+------------------------------------------------------------------------------------------------------------------------
+Build resources:
+ - 24.18GB of memory (75.6% of 32.00GB system memory, determined at start)
+ - 10 thread(s) (100.0% of 10 available processor(s), determined at start)
+[2/8] Performing analysis...  [***]                                                                      (6.6s @ 0.34GB)
+    4,196 reachable types   (76.4% of    5,489 total)
+    5,580 reachable fields  (43.9% of   12,721 total)
+   20,488 reachable methods (49.3% of   41,543 total)
+    1,402 types,   686 fields, and 2,133 methods registered for reflection
+       63 types,    69 fields, and    59 methods registered for JNI access
+        5 native libraries: -framework CoreServices, -framework Foundation, dl, pthread, z
+[3/8] Building universe...                                                                               (1.2s @ 0.38GB)
+[4/8] Parsing methods...      [*]                                                                        (0.7s @ 0.41GB)
+[5/8] Inlining methods...     [***]                                                                      (0.5s @ 0.46GB)
+[6/8] Compiling methods...    [***]                                                                      (6.1s @ 0.45GB)
+[7/8] Layouting methods...    [*]                                                                        (1.1s @ 0.48GB)
+[8/8] Creating image...       [**]                                                                       (2.2s @ 0.33GB)
+   7.16MB (39.77%) for code area:    12,408 compilation units
+  10.41MB (57.77%) for image heap:  128,246 objects and 47 resources
+ 453.91kB ( 2.46%) for other data
+  18.01MB in total
+------------------------------------------------------------------------------------------------------------------------
+Top 10 origins of code area:                                Top 10 object types in image heap:
+   5.17MB java.base                                            2.25MB byte[] for code metadata
+   1.10MB svm.jar (Native Image)                               1.72MB byte[] for java.lang.String
+ 449.90kB benchmarks.jar                                       1.25MB java.lang.String
+ 110.50kB java.logging                                       979.31kB java.lang.Class
+  56.80kB org.graalvm.nativeimage.base                       534.58kB heap alignment
+  50.59kB jdk.proxy1                                         360.59kB com.oracle.svm.core.hub.DynamicHubCompanion
+  48.74kB jdk.proxy3                                         312.13kB byte[] for reflection metadata
+  25.57kB jdk.net                                            296.18kB byte[] for general heap data
+  24.47kB jdk.internal.reflect                               268.73kB java.util.HashMap$Node
+  21.98kB org.graalvm.collections                            254.02kB java.lang.Object[]
+  54.91kB for 7 more packages                                  2.25MB for 1119 more object types
+------------------------------------------------------------------------------------------------------------------------
+Recommendations:
+ INIT: Adopt '--strict-image-heap' to prepare for the next GraalVM release.
+ HEAP: Set max heap for improved and more predictable memory usage.
+ CPU:  Enable more CPU features with '-march=native' for improved performance.
+------------------------------------------------------------------------------------------------------------------------
+                        1.6s (7.3% of total time) in 220 GCs | Peak RSS: 1.08GB | CPU load: 6.31
+------------------------------------------------------------------------------------------------------------------------
+Produced artifacts:
+ /Users/galder/1/fibula-show/2410-unfibula/unfibula/target/benchmarks (executable)
+========================================================================================================================
+Finished generating 'benchmarks' in 21.6s.
+/Users/galder/opt/java-21/bin/java  -jar target/benchmarks.jar -f 1 -r 1 -w 1 -i 2 -wi 2
+# JMH version: fibula:999-SNAPSHOT
+# VM version: JDK 21.0.2, Substrate VM, GraalVM CE 21.0.2+13.1
+# *** WARNING: This VM is not supported by JMH. The produced benchmark data can be completely wrong.
+# VM invoker: target/benchmarks
+# VM options: <none>
+# Compiler hints: disabled (Forced off)
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 2 iterations, 1 s each
+# Measurement: 2 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.sample.MyBenchmark.testMethod
+
+# Run progress: 0.00% complete, ETA 00:00:04
+# Fork: 1 of 1
+java.lang.ExceptionInInitializerError
+	at java.base@21.0.2/java.lang.Class.ensureInitialized(DynamicHub.java:601)
+	at java.base@21.0.2/jdk.internal.misc.Unsafe.ensureClassInitialized(Unsafe.java:133)
+	at org.graalvm.nativeimage.builder/com.oracle.svm.core.reflect.fieldaccessor.UnsafeFieldAccessorFactory.newFieldAccessor(UnsafeFieldAccessorFactory.java:44)
+	at java.base@21.0.2/jdk.internal.reflect.ReflectionFactory.newFieldAccessor(ReflectionFactory.java:1950)
+	at java.base@21.0.2/java.lang.reflect.Field.acquireOverrideFieldAccessor(Field.java:1200)
+	at java.base@21.0.2/java.lang.reflect.Field.getOverrideFieldAccessor(Field.java:146)
+	at java.base@21.0.2/java.lang.reflect.Field.getLong(Field.java:668)
+	at java.base@21.0.2/java.io.ObjectStreamClass.getDeclaredSUID(ObjectStreamClass.java:1713)
+	at java.base@21.0.2/java.io.ObjectStreamClass$2.run(ObjectStreamClass.java:397)
+	at java.base@21.0.2/java.io.ObjectStreamClass$2.run(ObjectStreamClass.java:385)
+	at java.base@21.0.2/java.security.AccessController.executePrivileged(AccessController.java:129)
+	at java.base@21.0.2/java.security.AccessController.doPrivileged(AccessController.java:319)
+	at java.base@21.0.2/java.io.ObjectStreamClass.<init>(ObjectStreamClass.java:385)
+	at java.base@21.0.2/java.io.ObjectStreamClass$Caches$1.computeValue(ObjectStreamClass.java:111)
+	at java.base@21.0.2/java.io.ObjectStreamClass$Caches$1.computeValue(ObjectStreamClass.java:108)
+	at java.base@21.0.2/java.io.ClassCache$1.computeValue(ClassCache.java:73)
+	at java.base@21.0.2/java.io.ClassCache$1.computeValue(ClassCache.java:70)
+	at java.base@21.0.2/java.lang.ClassValue.get(JavaLangSubstitutions.java:770)
+	at java.base@21.0.2/java.io.ClassCache.get(ClassCache.java:84)
+	at java.base@21.0.2/java.io.ObjectStreamClass.lookup(ObjectStreamClass.java:92)
+	at java.base@21.0.2/java.io.ObjectStreamClass.initNonProxy(ObjectStreamClass.java:580)
+	at java.base@21.0.2/java.io.ObjectInputStream.readNonProxyDesc(ObjectInputStream.java:2078)
+	at java.base@21.0.2/java.io.ObjectInputStream.readClassDesc(ObjectInputStream.java:1927)
+	at java.base@21.0.2/java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2252)
+	at java.base@21.0.2/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1762)
+	at java.base@21.0.2/java.io.ObjectInputStream$FieldValues.<init>(ObjectInputStream.java:2618)
+	at java.base@21.0.2/java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2469)
+	at java.base@21.0.2/java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2284)
+	at java.base@21.0.2/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1762)
+	at java.base@21.0.2/java.io.ObjectInputStream.readObject(ObjectInputStream.java:540)
+	at java.base@21.0.2/java.io.ObjectInputStream.readObject(ObjectInputStream.java:498)
+	at java.base@21.0.2/java.util.ArrayList.readObject(ArrayList.java:981)
+	at java.base@21.0.2/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.2/java.io.ObjectStreamClass.invokeReadObject(ObjectStreamClass.java:1102)
+	at java.base@21.0.2/java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2444)
+	at java.base@21.0.2/java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2284)
+	at java.base@21.0.2/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1762)
+	at java.base@21.0.2/java.io.ObjectInputStream$FieldValues.<init>(ObjectInputStream.java:2618)
+	at java.base@21.0.2/java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2469)
+	at java.base@21.0.2/java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2284)
+	at java.base@21.0.2/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1762)
+	at java.base@21.0.2/java.io.ObjectInputStream$FieldValues.<init>(ObjectInputStream.java:2618)
+	at java.base@21.0.2/java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2469)
+	at java.base@21.0.2/java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2284)
+	at java.base@21.0.2/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1762)
+	at java.base@21.0.2/java.io.ObjectInputStream.readObject(ObjectInputStream.java:540)
+	at java.base@21.0.2/java.io.ObjectInputStream.readObject(ObjectInputStream.java:498)
+	at org.openjdk.jmh.runner.link.BinaryLinkClient.readFrame(BinaryLinkClient.java:149)
+	at org.openjdk.jmh.runner.link.BinaryLinkClient.requestPlan(BinaryLinkClient.java:189)
+	at org.openjdk.jmh.runner.ForkedRunner.run(ForkedRunner.java:47)
+	at org.openjdk.jmh.runner.ForkedMain.main(ForkedMain.java:86)
+	at java.base@21.0.2/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.mendrugo.fibula.SwitchingForkedMain.main(SwitchingForkedMain.java:21)
+	at java.base@21.0.2/java.lang.invoke.LambdaForm$DMH/sa346b79c.invokeStaticInit(LambdaForm$DMH)null
+
+Caused by: java.lang.IllegalStateException: Can't find field "markerBegin"
+	at org.openjdk.jmh.util.Utils.getOffset(Utils.java:389)
+	at org.openjdk.jmh.util.Utils.check(Utils.java:371)
+	at org.openjdk.jmh.util.Utils.check(Utils.java:365)
+	at org.openjdk.jmh.infra.BenchmarkParams.<clinit>(BenchmarkParams.java:61)
+	... 54 more
+<forked VM failed with exit code 1>
+<stdout last='20 lines'>
+</stdout>
+<stderr last='20 lines'>
+	at java.base@21.0.2/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1762)
+	at java.base@21.0.2/java.io.ObjectInputStream$FieldValues.<init>(ObjectInputStream.java:2618)
+	at java.base@21.0.2/java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2469)
+	at java.base@21.0.2/java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2284)
+	at java.base@21.0.2/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1762)
+	at java.base@21.0.2/java.io.ObjectInputStream.readObject(ObjectInputStream.java:540)
+	at java.base@21.0.2/java.io.ObjectInputStream.readObject(ObjectInputStream.java:498)
+	at org.openjdk.jmh.runner.link.BinaryLinkClient.readFrame(BinaryLinkClient.java:149)
+	at org.openjdk.jmh.runner.link.BinaryLinkClient.requestPlan(BinaryLinkClient.java:189)
+	at org.openjdk.jmh.runner.ForkedRunner.run(ForkedRunner.java:47)
+	at org.openjdk.jmh.runner.ForkedMain.main(ForkedMain.java:86)
+	at java.base@21.0.2/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.mendrugo.fibula.SwitchingForkedMain.main(SwitchingForkedMain.java:21)
+	at java.base@21.0.2/java.lang.invoke.LambdaForm$DMH/sa346b79c.invokeStaticInit(LambdaForm$DMH)
+Caused by: java.lang.IllegalStateException: Can't find field "markerBegin"
+	at org.openjdk.jmh.util.Utils.getOffset(Utils.java:389)
+	at org.openjdk.jmh.util.Utils.check(Utils.java:371)
+	at org.openjdk.jmh.util.Utils.check(Utils.java:365)
+	at org.openjdk.jmh.infra.BenchmarkParams.<clinit>(BenchmarkParams.java:61)
+	... 54 more
+</stderr>
+
+# Run complete. Total time: 00:00:00
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark  Mode  Cnt  Score   Error  Units
+```
+
+The errors are similar to those seen before regarding fields not being found.
+Reflection configuration is required.
+
 ### Experiment 010
 
 Configure native image invocation so that `org.openjdk.jmh.runner.ForkedMain` runs in the forked process

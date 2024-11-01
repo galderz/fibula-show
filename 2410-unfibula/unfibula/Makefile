@@ -49,7 +49,7 @@ run: $(benchmarks_exec)
 > $(java) $(java_opts) $(benchmarks_args)
 
 $(benchmarks_exec): $(benchmarks_jar)
-> $(native_image) $(native_image_opts) -cp $< org.openjdk.jmh.runner.ForkedMain $(benchmarks_exec)
+> $(native_image) $(native_image_opts) -cp $< org.mendrugo.fibula.SwitchingForkedMain $(benchmarks_exec)
 
 $(benchmarks_jar): $(shell find . -type f -name "*.java" ! -path "./*/target/*")
 $(benchmarks_jar): $(shell find . -type f -name "*.json" ! -path "./*/target/*")
