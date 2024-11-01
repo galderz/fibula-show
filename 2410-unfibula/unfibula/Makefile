@@ -32,8 +32,21 @@ else
   java = $(JAVA_HOME)/bin/java
 endif
 
+benchmarks_args += -jar
+benchmarks_args += $(benchmarks_jar)
+benchmarks_args += -f
+benchmarks_args += 1
+benchmarks_args += -r
+benchmarks_args += 1
+benchmarks_args += -w
+benchmarks_args += 1
+benchmarks_args += -i
+benchmarks_args += 2
+benchmarks_args += -wi
+benchmarks_args += 2
+
 run: $(benchmarks_exec)
-> $(java) $(java_opts) -jar $(benchmarks_jar) -jvm $<
+> $(java) $(java_opts) $(benchmarks_args)
 
 $(benchmarks_exec): $(benchmarks_jar)
 > $(native_image) $(native_image_opts) -jar $< $(benchmarks_exec)
@@ -44,7 +57,7 @@ $(benchmarks_jar): $(shell find . -type f -name "pom.xml" ! -path "./*/target/*"
 > $(mvnw) package
 
 run-jvm: $(benchmarks_jar)
-> $(java) $(java_opts) -jar $< -f 1 -r 1 -w 1 -i 2 -wi 2
+> $(java) $(java_opts) $(benchmarks_args)
 .PHONY: run-jvm
 
 clean:
