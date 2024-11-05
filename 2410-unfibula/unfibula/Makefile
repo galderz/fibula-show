@@ -22,6 +22,7 @@ native_image = $(GRAALVM_HOME)/bin/native-image
 native_image_opts += --no-fallback
 
 mvnw += JAVA_HOME=$(JAVA_HOME)
+mvnw += GRAALVM_HOME=$(GRAALVM_HOME)
 mvnw += $(MAVEN_HOME)/bin/mvn
 
 java_opts = 
@@ -49,12 +50,11 @@ run: $(benchmarks_exec)
 > $(java) $(java_opts) $(benchmarks_args)
 
 $(benchmarks_exec): $(benchmarks_jar)
-> $(native_image) $(native_image_opts) -cp $< org.mendrugo.fibula.SwitchingForkedMain $(benchmarks_exec)
 
 $(benchmarks_jar): $(shell find . -type f -name "*.java" ! -path "./*/target/*")
 $(benchmarks_jar): $(shell find . -type f -name "*.json" ! -path "./*/target/*")
 $(benchmarks_jar): $(shell find . -type f -name "pom.xml" ! -path "./*/target/*")
-> $(mvnw) package
+> $(mvnw) package -Dnative
 
 run-jvm: $(benchmarks_jar)
 > $(java) $(java_opts) $(benchmarks_args)
