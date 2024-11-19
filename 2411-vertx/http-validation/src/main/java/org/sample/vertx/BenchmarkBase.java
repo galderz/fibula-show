@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 @Threads(1)
 @BenchmarkMode(Mode.Throughput)
 @Fork(value = 1, jvmArgs = {
-    "-Djmh.executor=CUSTOM",
-    "-Djmh.executor.class=io.vertx.core.impl.VertxExecutorService"
+    // "-Djmh.executor=CUSTOM",
+    // "-Djmh.executor.class=io.vertx.core.impl.VertxExecutorService"
 })
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 public abstract class BenchmarkBase {
