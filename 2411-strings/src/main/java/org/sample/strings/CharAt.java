@@ -35,14 +35,14 @@ public class CharAt
     }
 
     @Benchmark
-    @CompilerControl(CompilerControl.Mode.DONT_INLINE)
+    //@CompilerControl(CompilerControl.Mode.DONT_INLINE)
     public char charAtLatin1()
     {
         return strLatin1.charAt(charAtIndex);
     }
 
     @Benchmark
-    @CompilerControl(CompilerControl.Mode.DONT_INLINE)
+    //@CompilerControl(CompilerControl.Mode.DONT_INLINE)
     public char charAtUtf16()
     {
         return strUtf16.charAt(charAtIndex);
