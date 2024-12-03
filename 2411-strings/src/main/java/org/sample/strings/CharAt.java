@@ -2,7 +2,6 @@ package org.sample.strings;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.CompilerControl;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
@@ -35,14 +34,12 @@ public class CharAt
     }
 
     @Benchmark
-    //@CompilerControl(CompilerControl.Mode.DONT_INLINE)
     public char charAtLatin1()
     {
         return strLatin1.charAt(charAtIndex);
     }
 
     @Benchmark
-    //@CompilerControl(CompilerControl.Mode.DONT_INLINE)
     public char charAtUtf16()
     {
         return strUtf16.charAt(charAtIndex);
