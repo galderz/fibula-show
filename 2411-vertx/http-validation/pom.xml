@@ -6,55 +6,46 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
-        <compiler-plugin.version>3.12.1</compiler-plugin.version>
-        <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
-        <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.14.1</quarkus.platform.version>
-        <skipITs>true</skipITs>
-        <surefire-plugin.version>3.2.5</surefire-plugin.version>
+
+        <maven.compiler.release>21</maven.compiler.release>
         <uberjar.name>benchmarks</uberjar.name>
 
         <fibula.version>999-SNAPSHOT</fibula.version>
+        <jmh.version>1.37</jmh.version>
+
+        <compiler-plugin.version>3.12.1</compiler-plugin.version>
+        <native-maven-plugin.version>0.10.3</native-maven-plugin.version>
+        <shade-plugin.version>3.6.0</shade-plugin.version>
 
         <log4j2.version>2.17.2</log4j2.version>
+        <vertx-core.version>4.5.12-SNAPSHOT</vertx-core.version>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${quarkus.platform.group-id}</groupId>
-                <artifactId>${quarkus.platform.artifact-id}</artifactId>
-                <version>${quarkus.platform.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>org.mendrugo.fibula</groupId>
-            <artifactId>fibula-extension</artifactId>
+            <artifactId>fibula-core</artifactId>
             <version>${fibula.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mendrugo.fibula</groupId>
-            <artifactId>fibula-bootstrap</artifactId>
+            <artifactId>fibula-generator</artifactId>
             <version>${fibula.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.mendrugo.fibula</groupId>
-            <artifactId>fibula-runner</artifactId>
-            <version>${fibula.version}</version>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>${jmh.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-core</artifactId>
-            <version>4.5.12-SNAPSHOT</version>
+            <version>${vertx-core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -66,33 +57,16 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>${quarkus.platform.group-id}</groupId>
-                <artifactId>quarkus-maven-plugin</artifactId>
-                <version>${quarkus.platform.version}</version>
-                <extensions>true</extensions>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>build</goal>
-                            <goal>generate-code</goal>
-                            <goal>generate-code-tests</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${compiler-plugin.version}</version>
                 <configuration>
-                    <compilerArgs>
-                        <arg>-parameters</arg>
-                    </compilerArgs>
+                    <annotationProcessors>org.mendrugo.fibula.generator.NativeAssetsGenerator</annotationProcessors>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>${shade-plugin.version}</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -103,7 +77,7 @@
                             <finalName>${uberjar.name}</finalName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>org.mendrugo.fibula.bootstrap.BootstrapMain</mainClass>
+                                    <mainClass>org.mendrugo.fibula.MutiVmMain</mainClass>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
@@ -112,49 +86,52 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
+                <groupId>org.graalvm.buildtools</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <version>${native-maven-plugin.version}</version>
+                <extensions>true</extensions>
                 <executions>
                     <execution>
-                        <id>modify-jar</id>
-                        <phase>package</phase>
-                        <configuration>
-                            <target>
-                                <jar destfile="${project.build.directory}/${uberjar.name}.jar" update="true">
-                                    <fileset dir="${project.build.directory}/classes">
-                                        <include name="META-INF/BenchmarkList"/>
-                                    </fileset>
-                                    <fileset dir="${project.build.directory}/generated-classes">
-                                        <include name="META-INF/CompilerHints"/>
-                                    </fileset>
-                                    <fileset dir="${project.build.directory}/generated-classes">
-                                        <include name="**/*.class"/>
-                                    </fileset>
-                                </jar>
-                            </target>
-                        </configuration>
+                        <id>build-native</id>
                         <goals>
-                            <goal>run</goal>
+                            <goal>compile-no-fork</goal>
                         </goals>
+                        <phase>package</phase>
                     </execution>
                 </executions>
+                <configuration>
+                    <imageName>${uberjar.name}</imageName>
+                    <fallback>false</fallback>
+                    <mainClass>org.mendrugo.fibula.NativeForkedMain</mainClass>
+                </configuration>
             </plugin>
         </plugins>
     </build>
 
     <profiles>
         <profile>
-            <id>native</id>
+            <id>jvm.mode</id>
             <activation>
                 <property>
-                    <name>native</name>
+                    <name>jvm.mode</name>
                 </property>
             </activation>
-            <properties>
-                <skipITs>false</skipITs>
-                <quarkus.native.enabled>true</quarkus.native.enabled>
-            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <version>${native-maven-plugin.version}</version>
+                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>build-native</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
