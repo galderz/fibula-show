@@ -26,3 +26,23 @@ Run it with the DWARF profiler:
 ```shell
 java -jar target/benchmarks.jar -prof org.mendrugo.fibula.bootstrap.DwarfPerfAsmProfiler:events=cycles:P
 ```
+
+# Debugging the compiler
+
+Build native with options to log optimizations:
+
+```shell
+mvn package -DbuildArgs=-H:+TrackNodeSourcePosition,-H:OptimizationLog=Directory,-H:OptimizationLogPath=$PWD/target/optimization_log
+```
+
+Checkout GraalVM source code, change directory to `substratevm` and from there execute:
+
+```shell
+mx profdiff  --inliner-reasoning true report $PATH_TO/target/optimization_log
+```
+
+You can also step through the compiler with an IDE by making it run single-threaded:
+
+```shell
+mvn package -DbuildArgs=--debug-attach="*:8000",-Djava.util.concurrent.ForkJoinPool.common.parallelism=1
+```
