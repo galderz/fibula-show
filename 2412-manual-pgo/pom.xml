@@ -11,6 +11,7 @@
 
         <maven.compiler.release>21</maven.compiler.release>
         <uberjar.name>benchmarks</uberjar.name>
+        <nib.path>${project.build.directory}/${uberjar.name}.nib</nib.path>
 
         <fibula.version>999-SNAPSHOT</fibula.version>
         <jmh.version>1.37</jmh.version>
@@ -155,7 +156,7 @@
                                     <fallback>false</fallback>
                                     <mainClass>org.mendrugo.fibula.NativeForkedMain</mainClass>
                                     <buildArgs>
-                                        <buildArg>--bundle-create=${project.build.directory}/${uberjar.name}.nib,dry-run</buildArg>
+                                        <buildArg>--bundle-create=${nib.path},dry-run</buildArg>
                                     </buildArgs>
                                 </configuration>
                             </execution>
@@ -167,7 +168,7 @@
                                 <phase>package</phase>
                                 <configuration>
                                     <buildArgs>
-                                        <buildArg>--bundle-apply=${project.build.directory}/${uberjar.name}.nib</buildArg>
+                                        <buildArg>--bundle-apply=${nib.path}</buildArg>
                                         <buildArg>--pgo-instrument</buildArg>
                                     </buildArgs>
                                 </configuration>
