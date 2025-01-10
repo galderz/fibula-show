@@ -38,3 +38,11 @@ Run it with the DWARF profiler:
 ```shell
 java -jar target/benchmarks.jar -prof org.mendrugo.fibula.DwarfPerfAsmProfiler:events=cycles:P
 ```
+
+# Debugging the compiler
+
+Execute with:
+
+```shell
+mvn package -DbuildArgs=--debug-attach="*:8000"
+```
