@@ -46,3 +46,9 @@ Execute with:
 ```shell
 mvn package -DbuildArgs=--debug-attach="*:8000"
 ```
+
+## Increasing node count allowance to inline methods
+
+```shell
+mvn package -DbuildArgs=-H:MaxNodesInTrivialMethod=40
+```
