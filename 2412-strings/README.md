@@ -36,7 +36,7 @@ mvn package -Ddebug=true -DbuildArgs=-H:-DeleteLocalSymbols,-H:+SourceLevelDebug
 Run it with the DWARF profiler:
 
 ```shell
-java -jar target/benchmarks.jar -prof org.mendrugo.fibula.DwarfPerfAsmProfiler:events=cycles:P
+java -jar target/benchmarks.jar -prof org.mendrugo.fibula.DwarfPerfProfiler:events=cycles:P
 ```
 
 # Debugging the compiler
