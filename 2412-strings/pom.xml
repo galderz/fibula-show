@@ -155,6 +155,59 @@
             </build>
         </profile>
         <profile>
+            <id>pgo.perf</id>
+            <activation>
+                <property>
+                    <name>pgo.perf</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <version>${native-maven-plugin.version}</version>
+                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>build-bundle</id>
+                                <goals>
+                                    <goal>compile-no-fork</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <imageName>${uberjar.name}</imageName>
+                                    <fallback>false</fallback>
+                                    <mainClass>org.mendrugo.fibula.NativeForkedMain</mainClass>
+                                    <debug>true</debug>
+                                    <buildArgs>
+                                        <buildArg>--bundle-create=${nib.path},dry-run</buildArg>
+                                        <buildArg>-H:-DeleteLocalSymbols</buildArg>
+                                        <buildArg>-H:+SourceLevelDebug</buildArg>
+                                        <buildArg>-H:+TrackNodeSourcePosition</buildArg>
+                                        <buildArg>-H:+DebugCodeInfoUseSourceMappings</buildArg>
+                                    </buildArgs>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>build-instrumented</id>
+                                <goals>
+                                    <goal>compile-no-fork</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <buildArgs>
+                                        <buildArg>--bundle-apply=${nib.path}</buildArg>
+                                        <buildArg>--pgo-instrument</buildArg>
+                                    </buildArgs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>jvm.mode</id>
             <activation>
                 <property>
