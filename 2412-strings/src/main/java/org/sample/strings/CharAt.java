@@ -21,27 +21,29 @@ import java.util.concurrent.TimeUnit;
 @Fork(3)
 public class CharAt
 {
-    private String strLatin1;
-    private String strUtf16;
+    private String[] values;
     private int charAtIndex;
 
     @Setup
     public void setup()
     {
-        strLatin1 = "Latin1 string";
-        strUtf16 = "UTF-\uFF11\uFF16 string";
+        values = new String[2];
+        values[0] = "Latin1 string";
+        values[1] = "UTF-\uFF11\uFF16 string";
         charAtIndex = 3;
     }
 
     @Benchmark
     public char charAtLatin1()
     {
+        final String strLatin1 = values[0];
         return strLatin1.charAt(charAtIndex);
     }
 
     @Benchmark
     public char charAtUtf16()
     {
+        final String strUtf16 = values[1];
         return strUtf16.charAt(charAtIndex);
     }
 }
