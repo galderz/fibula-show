@@ -23,13 +23,14 @@ public class CharAt
 {
     private String strLatin1;
     private String strUtf16;
-    private int charAtIndex = 3;
+    private int charAtIndex;
 
     @Setup
     public void setup()
     {
         strLatin1 = "Latin1 string";
         strUtf16 = "UTF-\uFF11\uFF16 string";
+        charAtIndex = 3;
     }
 
     @Benchmark
