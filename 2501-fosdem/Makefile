@@ -38,7 +38,7 @@ graal-jit:
 aot:
 > cd $(strings_path)
 > JAVA_HOME=$(CE_HOME) $(mvn) clean package
-> $(GRAALVM_CE_HOME)/bin/java -jar $(benchmarks_jar)
+> $(CE_HOME)/bin/java -jar $(benchmarks_jar)
 .PHONY: aot
 
 pgo:
