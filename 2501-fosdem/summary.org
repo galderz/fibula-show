@@ -1,0 +1,1146 @@
+* PGO Profile
+** annotate latin1
+#+begin_src bash
+$ pahole --class_name=java.lang.String benchmarks
+...
+	class _z_.byte[] *         value;                /*     4     8 */
+
+	/* Bitfield combined with next fields */
+
+	int                        hash;                 /*     8     4 */
+	byte                       coder;                /*    12     1 */
+#+end_src
+
+#+begin_src bash
+Samples: 10K of event 'cycles:pp', 1000 Hz, Event count (approx.): 40269024183
+_ZN60org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest42charAtLatin1_AverageTime%%Hot_Method_Key_6EJP43org.openjdk.jmh.results.BenchmarkTaskResultP35org.openjdk.jmh.runner.InfraControlP34org.openjdk.jmh.infra.ThreadParams  /root/1/fosdem/pgo-profile/target/benchmarks-optimized.output/default/benchmarks [
+        │      → callq       _ZN25org.sample.strings.CharAt12charAtLatin1EJ4charv
+        │        nop
+        │        mov         0x94(%rsp),%ecx
+        │        test        %ecx,%ecx
+        │      ↓ je          507b
+        │        vmovsd      0x158(%rsp),%xmm0
+        │        mov         0xa8(%rsp),%rsi
+        │        vmovsd      throw_internal_error+0x3dc2e8,%xmm1
+        │        vaddsd      %xmm1,%xmm0,%xmm1
+        │        nop
+        │        cmpb        $0x0,0xb5(%rsi)
+        │      ↓ je          324d
+        │        vmovsd      %xmm1,0x150(%rsp)
+        │      → callq       _ZN16java.lang.Thread5yieldEJvv
+        │        nop
+        │        rex.W       pushq 0x150(%rsp)
+        │        rex.W       popq 0x158(%rsp)
+        │        mov         0xa0(%rsp),%rax
+        │        mov         0xa8(%rsp),%rsi
+        │        nop
+        │      ↑ jmpq        110
+        │ 1c5:   mov         0x14(%rdi),%eax
+        │        test        %eax,%eax
+        │      ↓ je          2fb2
+        │        movb        $0x1,0x88(%r14,%rax,8)
+        │        lock        addl        $0x0,(%rsp)
+        │        mov         0x10(%rdi),%eax
+        │        lea         (%r14,%rax,8),%rdx
+        │        mov         %rdx,0x98(%rsp)
+        │        mov         %eax,0x94(%rsp)
+        │      → callq       _ZN16java.lang.System8nanoTimeEJlv
+        │        nop
+        │        mov         %rax,0x150(%rsp)
+        │        mov         0xa0(%rsp),%rcx
+        │        mov         0x4(%rcx),%edi
+        │        test        %edi,%edi
+        │      ↓ je          2fb8
+        │        data16      data16 nopw 0x0(%rax,%rax,1)
+        │        cmpl        $0x0,0x4(%r14,%rdi,8)
+        │      ↓ je          2fbe
+        │        mov         0x8(%r14,%rdi,8),%edi
+        │        test        %edi,%edi
+        │      ↓ je          2fce
+        │        mov         0x4(%r14,%rdi,8),%edx
+        │        movsbl      0xc(%r14,%rdi,8),%edi
+        │        mov         0x8(%rcx),%ebx
+        │        mov         %ebx,0x14c(%rsp)
+        │        lea         (%r14,%rdx,8),%rbp
+        │        lea         0x429200(%r14),%rsi
+        │        lea         0x3196d0(%r14),%r8
+        │        mov         %r8,0x88(%rsp)
+        │        lea         0x43ff38(%r14),%r9
+        │        lea         0x460540(%r14),%r10
+        │        test        %dil,%dil
+        │      ↓ jne         2fd4
+        │        nop
+        │        test        %edx,%edx
+        │      ↓ je          3032
+        │        mov         0x4(%r14,%rdx,8),%edx
+        │        cmp         %ebx,%edx
+        │      ↓ jbe         303e
+        │        mov         %ebx,%edi
+        │        movzbl      0x8(%rbp,%rdi,1),%edi
+        │        mov         %edi,%edx
+        │        mov         0x94(%rsp),%edi
+        │ 2a5:   test        %edi,%edi
+        │      ↓ je          3038
+        │        mov         0xa8(%rsp),%rbx
+        │        data16      data16 nopw 0x0(%rax,%rax,1)
+        │        cmpb        $0x0,0xb0(%rbx)
+        │      ↓ jne         471f
+        │        mov         $0x1,%rbp
+        │        nop
+        │        data16      data16 xchg %ax,%ax
+        │ 2e0:   mov         0x4(%rcx),%edi
+        │        test        %edi,%edi
+        │      ↓ je          2dfc
+   0.01 │        cmpl        $0x0,0x4(%r14,%rdi,8)
+        │      ↓ je          2e06
+        │        mov         0x8(%r14,%rdi,8),%edi
+        │        nop
+        │        test        %edi,%edi
+        │      ↓ je          2e16
+        │        mov         0x4(%r14,%rdi,8),%edx
+        │        movsbl      0xc(%r14,%rdi,8),%edi
+        │        mov         0x8(%rcx),%r11d
+        │        lea         (%r14,%rdx,8),%r12
+        │        mov         %rbp,%r13
+        │        inc         %r13
+        │        test        %dil,%dil
+        │      ↓ jne         ae5
+        │        test        %edx,%edx
+        │      ↓ je          2e1c
+        │        mov         0x4(%r14,%rdx,8),%edx
+        │        cmp         %r11d,%edx
+        │      ↓ jbe         2e26
+        │        mov         %r11d,%edi
+        │        movzbl      0x8(%r12,%rdi,1),%edi
+        │        cmpb        $0x0,0xb0(%rbx)
+        │      ↓ jne         4245
+        │ 356:   mov         $0x1,%edx
+        │        mov         %r13,%rdi
+        │        xchg        %ax,%ax
+        │      ↓ jmpq        78c
+        │        data16      data16 nopw 0x0(%rax,%rax,1)
+        │        data16      data16 xchg %ax,%ax
+        │        nop
+        │        data16      data16 xchg %ax,%ax
+   0.38 │ 380:   cmpl        $0x0,0x4(%r14,%rbp,8)
+   0.73 │      ↓ je          b21
+   0.77 │        mov         0x8(%r14,%rbp,8),%ebp
+   0.38 │        test        %ebp,%ebp
+        │      ↓ je          b31
+   0.51 │        mov         0x4(%r14,%rbp,8),%r12d
+   0.35 │        movsbl      0xc(%r14,%rbp,8),%ebp
+   0.45 │        mov         0x8(%rcx),%r13d
+   0.87 │        lea         (%r14,%r12,8),%r8
+   0.41 │        mov         %r11,%rax                        <--- copy r11 into rax (operations)
+   0.32 │        inc         %rax                             <--- rax (operations) += 1
+   0.32 │        test        %bpl,%bpl
+        │      ↓ jne         7ad
+   0.35 │        nop
+   0.59 │        test        %r12d,%r12d                      <--- null pointer check on ?
+        │      ↓ je          b37
+   0.56 │        mov         0x4(%r14,%r12,8),%ebp
+   0.36 │        cmp         %r13d,%ebp
+        │      ↓ jbe         b3d
+   0.44 │        mov         %r13d,%ebp
+   0.35 │        movzbl      0x8(%r8,%rbp,1),%ebp
+   0.70 │        cmpb        $0x0,0xb0(%rbx)
+   0.42 │      ↓ jne         291a
+   0.40 │ 3ed:   mov         0x4(%rcx),%ebp                   <--- copy CharAt.values String[] to ebp
+                                                              <--- rcx holds CharAt object instance
+   0.29 │        test        %ebp,%ebp                        <--- null check CharAt.values
+        │      ↓ je          c57
+   0.62 │        cmpl        $0x0,0x4(%r14,%rbp,8)            <--- out of bounds check
+   0.41 │      ↓ je          c66
+   0.42 │        mov         0x8(%r14,%rbp,8),%ebp            <--- copy CharAt.values[0] String into ebp
+   0.48 │        test        %ebp,%ebp                        <--- null pointer check on String
+        │      ↓ je          c7e
+   0.42 │        mov         %rax,0x130(%rsp)
+   0.78 │        mov         0x4(%r14,%rbp,8),%r8d            <--- copy String.value byte[] into r8d
+   0.56 │        movsbl      0xc(%r14,%rbp,8),%ebp            <--- copy String.coder into ebp
+   0.50 │        mov         0x8(%rcx),%r12d                  <--- copy CharAt.charAtIndex to r12d
+                                                              <--- rcx holds CharAt object instance
+   0.43 │        lea         (%r14,%r8,8),%r13                <--- calculate String.value byte[] address and put into r13
+   0.37 │        lea         0x2(%r11),%rax                   <--- rax = r11 (operations) + 2
+   0.50 │        test        %bpl,%bpl                        <--- String.coder check for latin1 or utf16
+        │      ↓ jne         7fa
+   0.59 │        test        %r8d,%r8d                        <--- null check String.value byte[]
+        │      ↓ je          c8c
+   0.54 │        mov         0x4(%r14,%r8,8),%ebp             <---
+   0.59 │        cmp         %r12d,%ebp                       <--- check index? (index r12d, ebp String.value bute[] length)
+        │      ↓ jbe         c92
+   1.06 │        mov         %r12d,%ebp                       <--- copy CharAt.charAtIndex to ebp
+   0.50 │        movzbl      0x8(%r13,%rbp,1),%ebp            <--- copies String.value[index] to ebp (byte[] r13, index rbp)
+   0.29 │        cmpb        $0x0,0xb0(%rbx)                  <--- is done check
+   0.23 │      ↓ jne         2934
+   0.37 │ 476:   mov         0x4(%rcx),%ebp
+   0.66 │        nop
+   0.32 │        test        %ebp,%ebp
+        │      ↓ je          d94
+   0.37 │        cmpl        $0x0,0x4(%r14,%rbp,8)
+   0.31 │      ↓ je          da6
+   0.28 │        mov         0x8(%r14,%rbp,8),%ebp
+   0.68 │        nop
+   0.42 │        test        %ebp,%ebp
+        │      ↓ je          dbe
+   0.52 │        mov         %rax,0x118(%rsp)
+   0.95 │        mov         0x4(%r14,%rbp,8),%r8d
+   0.77 │        movsbl      0xc(%r14,%rbp,8),%ebp
+   0.51 │        mov         0x8(%rcx),%r12d
+   0.57 │        lea         (%r14,%r8,8),%r13
+   0.48 │        lea         0x3(%r11),%rax                   <--- rax = r11 (operations) + 3
+   0.45 │        test        %bpl,%bpl
+        │      ↓ jne         845
+   0.99 │        test        %r8d,%r8d
+        │      ↓ je          dcc
+   0.45 │        mov         0x4(%r14,%r8,8),%ebp
+   0.46 │        xchg        %ax,%ax
+   0.60 │        cmp         %r12d,%ebp
+        │      ↓ jbe         dd2
+   0.47 │        mov         %r12d,%ebp
+   1.01 │        movzbl      0x8(%r13,%rbp,1),%ebp
+   0.33 │        cmpb        $0x0,0xb0(%rbx)
+   0.54 │      ↓ jne         294b
+   1.07 │ 4ff:   mov         0x4(%rcx),%ebp
+   0.89 │        test        %ebp,%ebp
+        │      ↓ je          ed4
+   0.60 │        cmpl        $0x0,0x4(%r14,%rbp,8)
+   0.46 │      ↓ je          ee6
+   0.46 │        mov         0x8(%r14,%rbp,8),%ebp
+   0.50 │        nop
+   0.84 │        test        %ebp,%ebp
+        │      ↓ je          efe
+   0.47 │        mov         %rax,0x108(%rsp)
+   0.52 │        mov         0x4(%r14,%rbp,8),%r8d
+   0.43 │        movsbl      0xc(%r14,%rbp,8),%ebp
+   0.56 │        mov         0x8(%rcx),%r12d
+   1.15 │        lea         (%r14,%r8,8),%r13
+   0.44 │        lea         0x4(%r11),%rax                   <--- rax = r11 (operations) + 4
+   0.29 │        test        %bpl,%bpl
+        │      ↓ jne         89a
+   0.72 │        test        %r8d,%r8d
+        │      ↓ je          f0c
+   0.74 │        mov         0x4(%r14,%r8,8),%ebp
+   0.39 │        xchg        %ax,%ax
+   0.35 │        cmp         %r12d,%ebp
+        │      ↓ jbe         f12
+   0.38 │        mov         %r12d,%ebp
+   0.30 │        movzbl      0x8(%r13,%rbp,1),%ebp
+   0.60 │        cmpb        $0x0,0xb0(%rbx)
+   0.28 │      ↓ jne         2965
+   0.43 │ 57f:   mov         0x4(%rcx),%ebp
+   0.90 │        test        %ebp,%ebp
+        │      ↓ je          1014
+   0.85 │        cmpl        $0x0,0x4(%r14,%rbp,8)
+   0.49 │      ↓ je          1026
+   0.55 │        mov         0x8(%r14,%rbp,8),%ebp
+   0.64 │        nop
+   0.53 │        test        %ebp,%ebp
+        │      ↓ je          103e
+   1.19 │        mov         %rax,0xf8(%rsp)
+   0.55 │        mov         0x4(%r14,%rbp,8),%r8d
+   0.53 │        movsbl      0xc(%r14,%rbp,8),%ebp
+   0.52 │        mov         0x8(%rcx),%r12d
+   0.48 │        lea         (%r14,%r8,8),%r13
+   1.07 │        lea         0x5(%r11),%rax                   <--- rax = r11 (operations) + 5
+   0.57 │        test        %bpl,%bpl
+        │      ↓ jne         8e5
+   0.35 │        test        %r8d,%r8d
+        │      ↓ je          104c
+   0.35 │        mov         0x4(%r14,%r8,8),%ebp
+   0.36 │        xchg        %ax,%ax
+   0.66 │        cmp         %r12d,%ebp
+        │      ↓ jbe         1052
+   0.49 │        mov         %r12d,%ebp
+   0.43 │        movzbl      0x8(%r13,%rbp,1),%ebp
+   0.74 │        cmpb        $0x0,0xb0(%rbx)
+   0.87 │      ↓ jne         297c
+   0.50 │ 5ff:   mov         0x4(%rcx),%ebp
+   0.44 │        test        %ebp,%ebp
+        │      ↓ je          1154
+   0.56 │        cmpl        $0x0,0x4(%r14,%rbp,8)
+   0.63 │      ↓ je          1166
+   0.99 │        mov         0x8(%r14,%rbp,8),%ebp
+   0.53 │        nop
+   0.55 │        test        %ebp,%ebp
+        │      ↓ je          117e
+   0.67 │        mov         %rax,0xe8(%rsp)
+   0.79 │        mov         0x4(%r14,%rbp,8),%r8d
+   1.13 │        movsbl      0xc(%r14,%rbp,8),%ebp
+   0.56 │        mov         0x8(%rcx),%r12d
+   0.45 │        lea         (%r14,%r8,8),%r13
+   0.49 │        lea         0x6(%r11),%rax                   <--- rax = r11 (operations) + 6
+   0.44 │        test        %bpl,%bpl
+        │      ↓ jne         93a
+   0.92 │        test        %r8d,%r8d
+        │      ↓ je          118c
+   0.42 │        mov         0x4(%r14,%r8,8),%ebp
+   0.35 │        xchg        %ax,%ax
+   0.31 │        cmp         %r12d,%ebp
+        │      ↓ jbe         1192
+   0.36 │        mov         %r12d,%ebp
+   0.71 │        movzbl      0x8(%r13,%rbp,1),%ebp
+   0.38 │        cmpb        $0x0,0xb0(%rbx)
+   0.49 │      ↓ jne         2986
+   0.63 │ 67f:   mov         0x4(%rcx),%ebp
+   0.66 │        test        %ebp,%ebp
+        │      ↓ je          1294
+   0.40 │        cmpl        $0x0,0x4(%r14,%rbp,8)
+   0.36 │      ↓ je          129a
+   0.44 │        mov         0x8(%r14,%rbp,8),%ebp
+   0.44 │        nop
+   0.98 │        test        %ebp,%ebp
+        │      ↓ je          12aa
+   0.41 │        mov         0x4(%r14,%rbp,8),%r8d
+   0.48 │        movsbl      0xc(%r14,%rbp,8),%ebp
+   0.54 │        mov         0x8(%rcx),%r12d
+   0.51 │        lea         (%r14,%r8,8),%r13
+   1.09 │        lea         0x7(%r11),%r11                   <--- r11 = r11 (operations) + 7
+   0.55 │        nop
+   0.76 │        test        %bpl,%bpl
+        │      ↓ jne         977
+   0.61 │        test        %r8d,%r8d
+        │      ↓ je          12b0
+   0.78 │        mov         0x4(%r14,%r8,8),%ebp
+   0.27 │        cmp         %r12d,%ebp
+        │      ↓ jbe         12b6
+   0.46 │        mov         %r12d,%eax
+   0.30 │        movzbl      0x8(%r13,%rax,1),%eax
+   0.71 │        cmpb        $0x0,0xb0(%rbx)
+   0.32 │      ↓ jne         299b
+   0.31 │ 6f6:   mov         0x4(%rcx),%eax
+   0.40 │        test        %eax,%eax
+        │      ↓ je          13cb
+   0.70 │        cmpl        $0x0,0x4(%r14,%rax,8)
+   0.34 │      ↓ je          13d1
+   0.63 │        mov         0x8(%r14,%rax,8),%eax
+   0.76 │        test        %eax,%eax
+        │      ↓ je          13e1
+   1.23 │        mov         0x4(%r14,%rax,8),%ebp
+   0.52 │        movsbl      0xc(%r14,%rax,8),%eax
+   0.42 │        mov         0x8(%rcx),%r8d
+   0.43 │        lea         (%r14,%rbp,8),%r12
+   0.62 │        test        %al,%al
+        │      ↓ jne         9b2
+   0.31 │        test        %ebp,%ebp
+        │      ↓ je          13e7
+   0.53 │        mov         0x4(%r14,%rbp,8),%eax
+   0.49 │        cmp         %r8d,%eax
+        │      ↓ jbe         13ed
+   0.55 │        mov         %r8d,%eax
+   0.95 │        movzbl      0x8(%r12,%rax,1),%eax
+   0.62 │        cmpb        $0x0,0xb0(%rbx)
+   0.53 │      ↓ jne         29b0
+   0.65 │ 774:   lea         0x8(%rdx),%edx
+   0.47 │        nop
+   0.92 │        cmp         $0x1ff8,%edx
+        │      ↓ jge         9f2
+   0.41 │ 78c:   mov         0x4(%rcx),%ebp
+   0.36 │        lea         0x8(%rdi),%rdi                   <--- rdi = rdi (operations) + 8
+   0.28 │        mov         %rdi,%r11                        <--- r11 = rdi
+   0.39 │        sub         $0x8,%r11                        <--- reset r11 before looping back (r11 -= 8)
+   0.70 │        nop
+   0.37 │        test        %ebp,%ebp
+        │      ↑ jne         380
+        │      ↓ jmpq        b1b
+        │ 7ad:   mov         %rax,0x130(%rsp)
+        │        test        %r12d,%r12d
+        │      ↓ je          32e8
+        │        mov         0x4(%r14,%r12,8),%eax
+        │        shr         %eax
+        │        cmp         %r13d,%eax
+        │      ↓ jbe         3306
+        │        shl         %r13d
+#+end_src
+** run benchmark
+#+begin_src bash
+$ java -jar target/benchmarks.jar -prof org.mendrugo.fibula.PerfDwarfProfiler:events=cycles:pp charAtLatin1
+...
+Secondary result "org.sample.strings.CharAt.charAtLatin1:asm":
+Perf binary output saved to ./org.sample.strings.CharAt.charAtLatin1-AverageTime.perfbin
+#+end_src
+** mvn package
+#+begin_src bash
+$ mvn package -Dpgo.perf
+...
+========================================================================================================================
+GraalVM Native Image: Generating 'benchmarks' (executable)...
+========================================================================================================================
+[1/8] Initializing...                                                                                    (2.7s @ 0.19GB)
+ Java version: 21.0.5+9-LTS, vendor version: Oracle GraalVM 21.0.5+9.1
+ Graal compiler: optimization level: 2, target machine: x86-64-v3, PGO: instrument
+...
+------------------------------------------------------------------------------------------------------------------------
+ 3 experimental option(s) unlocked:
+ - '-H:+DebugCodeInfoUseSourceMappings' (origin(s): command line)
+ - '-H:-DeleteLocalSymbols' (origin(s): command line)
+ - '-H:+SourceLevelDebug' (origin(s): command line)
+...
+Finished generating 'benchmarks' in 1m 23s.
+
+Native Image Bundles: Bundle build output written to /root/1/fosdem/pgo-profile/target/benchmarks.output
+#+end_src
+* PGO Run
+** run benchmark
+#+begin_src bash
+$ java -jar target/benchmarks.jar charAtLatin1
+# JMH version: fibula:999-SNAPSHOT
+# VM version: JDK 21.0.5, Substrate VM, Oracle GraalVM 21.0.5+9.1
+# *** WARNING: This VM is not supported by JMH. The produced benchmark data can be completely wrong.
+# VM invoker: target/benchmarks.output/default/benchmarks
+...
+# Run progress: 0.00% complete, ETA 00:00:20
+# PGO: Instrumented Warmup Fork
+# Warmup Fork: 1 of 1
+# Warmup Iteration   1: 2.461 ns/op
+# Warmup Iteration   2: 2.465 ns/op
+# Warmup Iteration   3: 2.464 ns/op
+# Warmup Iteration   4: 2.464 ns/op
+# Warmup Iteration   5: 2.464 ns/op
+# Warmup Iteration   6: 2.464 ns/op
+# Warmup Iteration   7: 2.462 ns/op
+# Warmup Iteration   8: 2.463 ns/op
+# Warmup Iteration   9: 2.461 ns/op
+# Warmup Iteration  10: 2.462 ns/op
+Iteration   1: 2.460 ns/op
+Iteration   2: 2.460 ns/op
+Iteration   3: 2.463 ns/op
+Iteration   4: 2.460 ns/op
+Iteration   5: 2.459 ns/op
+
+# PGO: Rebuild bundle with profiling data
+# PGO: Rebuild native from bundle
+
+# Run progress: 50.00% complete, ETA 00:00:10
+# Fork: 1 of 1
+# Warmup Iteration   1: 1.446 ns/op
+# Warmup Iteration   2: 1.451 ns/op
+# Warmup Iteration   3: 1.445 ns/op
+# Warmup Iteration   4: 1.459 ns/op
+# Warmup Iteration   5: 1.446 ns/op
+# Warmup Iteration   6: 1.447 ns/op
+# Warmup Iteration   7: 1.446 ns/op
+# Warmup Iteration   8: 1.446 ns/op
+# Warmup Iteration   9: 1.445 ns/op
+# Warmup Iteration  10: 1.452 ns/op
+Iteration   1: 1.449 ns/op
+Iteration   2: 1.444 ns/op
+Iteration   3: 1.450 ns/op
+Iteration   4: 1.443 ns/op
+Iteration   5: 1.443 ns/op
+
+Benchmark            Mode  Cnt  Score   Error  Units
+CharAt.charAtLatin1  avgt    5  1.446 ± 0.013  ns/op
+#+end_src
+** mvn package
+#+begin_src bash
+$ mvn package -Dpgo
+...
+========================================================================================================================
+GraalVM Native Image: Generating 'benchmarks' (executable)...
+========================================================================================================================
+[1/8] Initializing...                                                                                    (2.7s @ 0.19GB)
+ Java version: 21.0.5+9-LTS, vendor version: Oracle GraalVM 21.0.5+9.1
+ Graal compiler: optimization level: 2, target machine: x86-64-v3, PGO: instrument
+...
+Finished generating 'benchmarks' in 1m 2s.
+
+Native Image Bundles: Bundle build output written to /root/1/fosdem/pgo/target/benchmarks.output
+#+end_src
+* HotSpot
+** perfasm
+#+begin_src bash
+$ java -jar target/benchmarks.jar -prof perfasm
+...
+....[Hottest Region 1]..............................................................................
+c2, level 4, org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest::charAtLatin1_avgt_jmhStub, version 6, compile id 598
+
+            0x00007fdb00304da0:   movl		0x10(%r8), %r11d    ;*getfield values {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - org.sample.strings.CharAt::charAtLatin1@1 (line 39)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest::charAtLatin1_avgt_jmhStub@17 (line 190)
+            0x00007fdb00304da4:   movl		0xc(%r12, %r11, 8), %r9d; implicit exception: dispatches to 0x00007fdb00304ff0
+            0x00007fdb00304da9:   testl		%r9d, %r9d
+            0x00007fdb00304dac:   jbe		0x7fdb00304eac
+            0x00007fdb00304db2:   movl		0x10(%r12, %r11, 8), %r10d
+                                                                      ;*aaload {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - org.sample.strings.CharAt::charAtLatin1@5 (line 39)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest::charAtLatin1_avgt_jmhStub@17 (line 190)
+  14.47%    0x00007fdb00304db7:   movl		0xc(%r8), %r9d      ;*getfield charAtIndex {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - org.sample.strings.CharAt::charAtLatin1@9 (line 40)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest::charAtLatin1_avgt_jmhStub@17 (line 190)
+            0x00007fdb00304dbb:   movsbl		0x10(%r12, %r10, 8), %r11d
+                                                                      ; implicit exception: dispatches to 0x00007fdb00305004
+                                                                      ;*getfield coder {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - java.lang.String::isLatin1@7 (line 4821)
+                                                                      ; - java.lang.String::charAt@1 (line 1554)
+                                                                      ; - org.sample.strings.CharAt::charAtLatin1@12 (line 40)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest::charAtLatin1_avgt_jmhStub@17 (line 190)
+   0.02%    0x00007fdb00304dc1:   testl		%r11d, %r11d
+   4.75%    0x00007fdb00304dc4:   jne		0x7fdb00304edc      ;*ifne {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - java.lang.String::isLatin1@10 (line 4821)
+                                                                      ; - java.lang.String::charAt@1 (line 1554)
+                                                                      ; - org.sample.strings.CharAt::charAtLatin1@12 (line 40)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest::charAtLatin1_avgt_jmhStub@17 (line 190)
+            0x00007fdb00304dca:   movl		0x14(%r12, %r10, 8), %r11d
+                                                                      ;*getfield value {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - java.lang.String::charAt@8 (line 1555)
+                                                                      ; - org.sample.strings.CharAt::charAtLatin1@12 (line 40)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest::charAtLatin1_avgt_jmhStub@17 (line 190)
+            0x00007fdb00304dcf:   movl		0xc(%r12, %r11, 8), %r10d; implicit exception: dispatches to 0x00007fdb0030501c
+                                                                      ;*arraylength {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - java.lang.StringLatin1::charAt@2 (line 46)
+                                                                      ; - java.lang.String::charAt@12 (line 1555)
+                                                                      ; - org.sample.strings.CharAt::charAtLatin1@12 (line 40)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest::charAtLatin1_avgt_jmhStub@17 (line 190)
+  50.97%    0x00007fdb00304dd4:   cmpl		%r10d, %r9d
+            0x00007fdb00304dd7:   jae		0x7fdb00304e40      ;*invokestatic checkIndex {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - java.lang.String::checkIndex@5 (line 4832)
+                                                                      ; - java.lang.StringLatin1::charAt@3 (line 46)
+                                                                      ; - java.lang.String::charAt@12 (line 1555)
+                                                                      ; - org.sample.strings.CharAt::charAtLatin1@12 (line 40)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest::charAtLatin1_avgt_jmhStub@17 (line 190)
+            0x00007fdb00304dd9:   cmpl		%r10d, %r9d
+   4.69%    0x00007fdb00304ddc:   jae		0x7fdb00304e78
+            0x00007fdb00304de2:   movzbl		0x94(%rdi), %edx    ;*getfield isDone {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest::charAtLatin1_avgt_jmhStub@30 (line 192)
+            0x00007fdb00304de9:   leaq		(%r12, %r11, 8), %r10
+            0x00007fdb00304ded:   movzbl		0x10(%r10, %r9), %r11d;*iand {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - java.lang.StringLatin1::charAt@12 (line 47)
+                                                                      ; - java.lang.String::charAt@12 (line 1555)
+                                                                      ; - org.sample.strings.CharAt::charAtLatin1@12 (line 40)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest::charAtLatin1_avgt_jmhStub@17 (line 190)
+  22.93%    0x00007fdb00304df3:   addq		$1, %rbx            ;*getfield isDone {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest::charAtLatin1_avgt_jmhStub@30 (line 192)
+            0x00007fdb00304df7:   movq		0x450(%r15), %r10   ; ImmutableOopMap {r8=Oop rcx=Oop rdi=Oop r13=Oop }
+                                                                      ;*ifeq {reexecute=1 rethrow=0 return_oop=0}
+                                                                      ; - (reexecute) org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest::charAtLatin1_avgt_jmhStub@33 (line 192)
+            0x00007fdb00304dfe:   testl		%eax, (%r10)        ;   {poll}
+            0x00007fdb00304e01:   testl		%edx, %edx
+....................................................................................................
+...
+....[Hottest Region 1]..............................................................................
+c2, level 4, org.sample.strings.jmh_generated.CharAt_charAtUtf16_jmhTest::charAtUtf16_avgt_jmhStub, version 4, compile id 593
+
+                                                                      ; - (reexecute) org.sample.strings.jmh_generated.CharAt_charAtUtf16_jmhTest::charAtUtf16_avgt_jmhStub@33 (line 192)
+            0x00007f430030343d:   testl		%eax, (%r10)        ;   {poll}
+            0x00007f4300303440:   testl		%r8d, %r8d
+            0x00007f4300303443:   jne		0x7f43003034de      ;*aload_1 {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtUtf16_jmhTest::charAtUtf16_avgt_jmhStub@36 (line 193)
+            0x00007f4300303449:   movl		0x10(%r11), %r8d    ;*getfield values {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - org.sample.strings.CharAt::charAtUtf16@1 (line 46)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtUtf16_jmhTest::charAtUtf16_avgt_jmhStub@17 (line 190)
+            0x00007f430030344d:   movl		0xc(%r12, %r8, 8), %r10d; implicit exception: dispatches to 0x00007f43003036b4
+            0x00007f4300303452:   cmpl		$1, %r10d
+  14.97%    0x00007f4300303456:   jbe		0x7f4300303519
+            0x00007f430030345c:   movl		0x14(%r12, %r8, 8), %r10d;*aaload {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - org.sample.strings.CharAt::charAtUtf16@5 (line 46)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtUtf16_jmhTest::charAtUtf16_avgt_jmhStub@17 (line 190)
+   0.02%    0x00007f4300303461:   movl		0xc(%r11), %r9d     ;*getfield charAtIndex {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - org.sample.strings.CharAt::charAtUtf16@9 (line 47)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtUtf16_jmhTest::charAtUtf16_avgt_jmhStub@17 (line 190)
+            0x00007f4300303465:   movl		0x14(%r12, %r10, 8), %r8d; implicit exception: dispatches to 0x00007f43003036c8
+                                                                      ;*getfield value {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - java.lang.String::charAt@8 (line 1555)
+                                                                      ; - org.sample.strings.CharAt::charAtUtf16@12 (line 47)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtUtf16_jmhTest::charAtUtf16_avgt_jmhStub@17 (line 190)
+   0.36%    0x00007f430030346a:   cmpb		$0, 0x10(%r12, %r10, 8)
+            0x00007f4300303470:   je		0x7f43003034b8      ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - java.lang.String::charAt@4 (line 1554)
+                                                                      ; - org.sample.strings.CharAt::charAtUtf16@12 (line 47)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtUtf16_jmhTest::charAtUtf16_avgt_jmhStub@17 (line 190)
+   3.37%    0x00007f4300303472:   movl		0xc(%r12, %r8, 8), %r10d; implicit exception: dispatches to 0x00007f43003036e0
+  51.67%    0x00007f4300303477:   sarl		$1, %r10d           ;*ishr {reexecute=0 rethrow=0 return_oop=0}
+                                                                      ; - java.lang.StringUTF16::length@3 (line 75)
+                                                                      ; - java.lang.StringUTF16::checkIndex@2 (line 1613)
+                                                                      ; - java.lang.StringUTF16::charAt@2 (line 1418)
+                                                                      ; - java.lang.String::charAt@21 (line 1557)
+                                                                      ; - org.sample.strings.CharAt::charAtUtf16@12 (line 47)
+                                                                      ; - org.sample.strings.jmh_generated.CharAt_charAtUtf16_jmhTest::charAtUtf16_avgt_jmhStub@17 (line 190)
+            0x00007f430030347a:   cmpl		%r10d, %r9d
+  13.24%    0x00007f430030347d:   jb		0x7f4300303420
+            0x00007f430030347f:   movl		$0xffffffe4, %esi
+            0x00007f4300303484:   movq		%rdi, %rbp
+            0x00007f4300303487:   movq		%r13, 0x40(%rsp)
+            0x00007f430030348c:   movq		%r11, 0x50(%rsp)
+            0x00007f4300303491:   movq		%rbx, (%rsp)
+            0x00007f4300303495:   movq		%rcx, 8(%rsp)
+            0x00007f430030349a:   movl		%r8d, 0x10(%rsp)
+            0x00007f430030349f:   movl		%r9d, 0x18(%rsp)
+            0x00007f43003034a4:   movl		%r10d, 0x1c(%rsp)
+            0x00007f43003034a9:   nop
+....................................................................................................
+#+end_src
+** run benchmark
+#+begin_src bash
+$ java -jar target/benchmarks.jar
+...
+Benchmark            Mode  Cnt  Score   Error  Units
+CharAt.charAtLatin1  avgt    5  1.722 ± 0.035  ns/op
+CharAt.charAtUtf16   avgt    5  1.713 ± 0.001  ns/op
+#+end_src
+** mvn package
+#+begin_src bash
+$ mvn package -Djvm.mode
+...
+[INFO] --- shade:3.6.0:shade (default) @ strings ---
+[INFO] Including org.mendrugo.fibula:fibula-core:jar:999-SNAPSHOT in the shaded jar.
+[INFO] Including org.openjdk.jmh:jmh-core:jar:1.37 in the shaded jar.
+[INFO] Including net.sf.jopt-simple:jopt-simple:jar:5.0.4 in the shaded jar.
+[INFO] Including org.apache.commons:commons-math3:jar:3.6.1 in the shaded jar.
+[INFO] Dependency-reduced POM written at: /root/1/fosdem/hotspot/dependency-reduced-pom.xml
+[INFO] Replacing /root/1/fosdem/hotspot/target/benchmarks.jar with /root/1/fosdem/hotspot/target/strings-1.0.0-SNAPSHOT-shaded.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.519 s
+[INFO] Finished at: 2025-01-21T13:33:38Z
+[INFO] ------------------------------------------------------------------------
+#+end_src
+* Trivial Profile
+** annotate latin1 String.charAt
+#+begin_src bash
+Samples: 10K of event 'cycles:pp', 1000 Hz, Event count (approx.): 40579651468
+_ZN16java.lang.String6charAtEJ4chari  /root/1/fosdem/trivial-profile/target/benchmarks [Percent: local period]
+Percent │
+        │
+        │
+        │     Disassembly of section .text:
+        │
+        │     000000000067cc00 <char java.lang.String::charAt(int)>:
+   5.93 │       sub         $0x38,%rsp
+   2.38 │       cmp         0x8(%r15),%rsp                <--- stackoverflow check
+        │     ↓ jbe         ca
+   2.76 │       mov         0x10(%rdi),%rdx
+   2.18 │       lea         (%r14,%rdx,1),%rax            <--- get address of String.value byte[] into rax
+   2.89 │       lea         0x80(%rsi),%ecx
+   3.54 │       cmpb        $0x0,0x18(%rdi)               <--- is latin1 check, inlined isLatin1()
+   1.98 │     ↓ je          75
+...
+   2.72 │ 75:   nop
+   1.98 │       test        %rdx,%rdx                     <--- null pointer check
+        │     ↓ je          d6
+   2.69 │       mov         0xc(%r14,%rdx,1),%edx         <--- copy byte[] length into edx
+   3.06 │       cmp         %esi,%edx                     <--- index out of bounds length check?
+        │     ↓ jbe         26e
+   2.69 │       mov         %esi,%edx                     <--- copy index to edx
+   3.21 │       movzbl      0x10(%rax,%rdx,1),%edx        <--- copies byte[index] to edx (byte[] rax, index rdx)
+                                                          <--- movzbl zero extends the char to integer to make it unsigned
+                                                          <---   equivalent of `& 0xFF` java code
+   2.58 │       subl        $0x1,0x10(%r15)
+   2.00 │     ↓ jle         c2
+   2.92 │ b3:   mov         %edx,%eax                     <--- copy edx to eax to return the char
+   3.30 │       add         $0x38,%rsp
+   2.18 │     ← retq
+        │ ba: → callq       _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv
+        │       nop
+        │     ↑ jmp         6e
+        │ c2: → callq       _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv
+        │       nop
+        │     ↑ jmp         b3
+        │ ca: → callq       _ZN57com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl26throwNewStackOverflowErrorEJvv
+        │       nop
+        │ d0: → callq       _ZN47com.oracle.svm.core.snippets.ImplicitExceptions28throwNewNullPointerExceptionEJvv
+        │       nop
+        │ d6: → callq       _ZN47com.oracle.svm.core.snippets.ImplicitExceptions28throwNewNullPointerExceptionEJvv
+        │       nop
+        │ dc:   movabs      $0x4b88f8,%rbx
+        │       lea         (%r14,%rbx,1),%rbx
+        │       movabs      $0x636b58,%rbp
+        │       lea         (%r14,%rbp,1),%rbp
+        │       cmp         $0x100,%ecx
+        │     ↓ jb          405
+        │       mov         %rbx,%rcx
+        │       mov         0x28(%r15),%r8
+        │       lea         0x10(%r8),%r9
+        │       sub         %r14,%rcx
+        │       nop
+        │       cmp         0x20(%r15),%r9
+        │     ↓ ja          700
+        │       mov         %r9,0x28(%r15)
+        │       prefetchnta 0xd0(%r8)
+        │       mov         %rcx,(%r8)
+        │       movl        $0x0,0x8(%r8)
+        │       movl        $0x0,0xc(%r8)
+        │149:   mov         %esi,0xc(%r8)
+        │14d:   lea         0x80(%rdx),%ecx
+        │       cmp         $0x100,%ecx
+        │     ↓ jb          418
+        │       mov         0x28(%r15),%rcx
+        │       lea         0x10(%rcx),%rbp
+        │       sub         %r14,%rbx
+        │       cmp         0x20(%r15),%rbp
+        │     ↓ ja          635
+        │       mov         %rbp,0x28(%r15)
+        │       prefetchnta 0xd0(%rcx)
+        │       mov         %rbx,(%rcx)
+        │       movl        $0x0,0x8(%rcx)
+        │       movl        $0x0,0xc(%rcx)
+        │190:   mov         %edx,0xc(%rcx)
+        │193:   movabs      $0x5117a0,%rdx
+        │       lea         (%r14,%rdx,1),%rdx
+        │       mov         0x28(%r15),%rbx
+        │       lea         0x20(%rbx),%rbp
+        │       sub         %r14,%rdx
+Press 'h' for help on key bindings
+#+end_src
+** run benchmark
+#+begin_src bash
+$ java -jar target/benchmarks.jar -prof org.mendrugo.fibula.PerfDwarfProfiler:events=cycles:pp
+# JMH version: fibula:999-SNAPSHOT
+# VM version: JDK 21.0.2, Substrate VM, GraalVM CE 21.0.2+13.1
+# *** WARNING: This VM is not supported by JMH. The produced benchmark data can be completely wrong.
+# VM invoker: target/benchmarks
+...
+Secondary result "org.sample.strings.CharAt.charAtLatin1:asm":
+Perf binary output saved to ./org.sample.strings.CharAt.charAtLatin1-AverageTime.perfbin
+...
+Secondary result "org.sample.strings.CharAt.charAtUtf16:asm":
+Perf binary output saved to ./org.sample.strings.CharAt.charAtUtf16-AverageTime.perfbin
+#+end_src
+** mvn package
+#+begin_src bash
+$ mvn package -Ddebug=true -DbuildArgs=-H:-DeleteLocalSymbols,-H:+SourceLevelDebug,-H:+TrackNodeSourcePosition,-H:+DebugCodeInfoUseSourceMappings,-H:MaxNodesInTrivialMethod=40
+...
+========================================================================================================================
+GraalVM Native Image: Generating 'benchmarks' (executable)...
+========================================================================================================================
+...
+------------------------------------------------------------------------------------------------------------------------
+ 4 experimental option(s) unlocked:
+ - '-H:+DebugCodeInfoUseSourceMappings' (origin(s): command line)
+ - '-H:-DeleteLocalSymbols' (origin(s): command line)
+ - '-H:MaxNodesInTrivialMethod' (origin(s): command line)
+ - '-H:+SourceLevelDebug' (origin(s): command line)
+------------------------------------------------------------------------------------------------------------------------
+...
+Produced artifacts:
+ /root/1/fosdem/trivial-profile/target/benchmarks (executable)
+ /root/1/fosdem/trivial-profile/target/benchmarks.debug (debug_info)
+ /root/1/fosdem/trivial-profile/target/sources (debug_info)
+========================================================================================================================
+Finished generating 'benchmarks' in 47.9s.
+#+end_src
+* Trivial Run
+** run benchmark
+#+begin_src bash
+$ java -jar target/benchmarks.jar
+# JMH version: fibula:999-SNAPSHOT
+# VM version: JDK 21.0.2, Substrate VM, GraalVM CE 21.0.2+13.1
+# *** WARNING: This VM is not supported by JMH. The produced benchmark data can be completely wrong.
+# VM invoker: target/benchmarks
+...
+Benchmark            Mode  Cnt  Score   Error  Units
+CharAt.charAtLatin1  avgt    5  2.410 ± 0.135  ns/op
+CharAt.charAtUtf16   avgt    5  2.426 ± 0.072  ns/op
+#+end_src
+** mvn package
+#+begin_src bash
+$ mvn package -DbuildArgs=-H:MaxNodesInTrivialMethod=40
+...
+========================================================================================================================
+GraalVM Native Image: Generating 'benchmarks' (executable)...
+========================================================================================================================
+...
+------------------------------------------------------------------------------------------------------------------------
+ 1 experimental option(s) unlocked:
+ - '-H:MaxNodesInTrivialMethod' (origin(s): command line)
+------------------------------------------------------------------------------------------------------------------------
+...
+Produced artifacts:
+ /root/1/fosdem/trivial-run/target/benchmarks (executable)
+========================================================================================================================
+Finished generating 'benchmarks' in 28.3s.
+#+end_src
+* First Profile
+** annotate utf16 String.charAt
+#+begin_src bash
+Samples: 10K of event 'cycles:pp', 1000 Hz, Event count (approx.): 40345770398
+_ZN16java.lang.String6charAtEJ4chari  /root/1/fosdem/first-profile/target/benchmarks [Percent: local period]
+   3.07 │      sub    $0x18,%rsp
+   1.36 │      cmp    0x8(%r15),%rsp            <--- stackoverflow check
+        │    ↓ jbe    c8
+   1.67 │      mov    0x10(%rdi),%rdx
+   1.69 │      lea    (%r14,%rdx,1),%rax        <--- get address of String.value byte[] into rax
+   1.40 │      cmpb   $0x0,0x18(%rdi)           <--- is latin1 check, inlined isLatin1()
+   1.38 │    ↓ je     94
+                                                <--- inlined StringUTF16.charAt
+   3.16 │      test   %rdx,%rdx                 <--- null pointer check
+        │    ↓ je     d2
+   1.67 │      mov    %rax,0x8(%rsp)            <--- copy String.value byte[] to 0x8(%rsp)
+   1.49 │      mov    0xc(%r14,%rdx,1),%edi     <--- copy byte[] length into edi
+   1.51 │      mov    %edi,%edx                 <--- copy length into edx
+   3.24 │      shr    %edx                      <--- byte[].length >> 1 happening in StringUTF16.length()
+   1.58 │      movabs $0x841310,%rcx
+   1.86 │      lea    (%r14,%rcx,1),%rcx        <--- obtain reference to Preconditions.SIOOBE_FORMATTER (3rd argument)
+   3.11 │      mov    %esi,%edi                 <--- prepare index (esi) parameter for call (1st argument)
+   1.36 │      mov    %esi,0x14(%rsp)
+   2.08 │      mov    %edx,%esi                 <--- copy length into esi (2nd argument)
+   1.73 │      mov    %rcx,%rdx                 <--- copy formatter into rdx (3rd argument)
+   2.94 │    → callq  _ZN31jdk.internal.util.Preconditions10checkIndexEJiiiP29java.util.function.BiFunction
+   1.78 │      mov    0x14(%rsp),%esi           <--- move index to esi
+   1.91 │      shl    %esi                      <--- left shift index
+   1.40 │      movslq %esi,%rax
+   1.45 │      mov    0x8(%rsp),%rcx            <--- copy String.value byte[] to rcx
+   3.51 │      movzwl 0x10(%rcx,%rax,1),%eax    <--- extract the UTF16 char out of the byte[]
+   1.75 │      subl   $0x1,0x10(%r15)
+   1.82 │    ↓ jle    bf
+   2.67 │8f:   add    $0x18,%rsp
+   1.47 │    ← retq
+        │94:   mov    %rax,%rcx
+        │      mov    %esi,0x14(%rsp)
+        │      mov    %rcx,%rdi
+        │    → callq  _ZN22java.lang.StringLatin16charAtEJ4charP6byte[]i
+        │      subl   $0x1,0x10(%r15)
+        │    ↓ jle    b7
+        │b2:   add    $0x18,%rsp
+        │    ← retq
+        │b7: → callq  _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv
+        │    ↑ jmp    b2
+        │bf:   nop
+        │    → callq  _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv
+        │    ↑ jmp    8f
+        │c8:   mov    %esi,0x14(%rsp)
+        │    → callq  _ZN57com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl26throwNewStackOverflowErrorEJvv
+        │      nop
+        │d2:   mov    %rax,%rcx
+        │    → callq  _ZN47com.oracle.svm.core.snippets.ImplicitExceptions28throwNewNullPointerExceptionEJvv
+        │      nop
+#+end_src
+** annotate latin1
+*** String.charAt
+#+begin_src bash
+Samples: 10K of event 'cycles:pp', 1000 Hz, Event count (approx.): 40667541169
+_ZN16java.lang.String6charAtEJ4chari  /root/1/fosdem/first-profile/target/benchmarks [Percent: local period]
+Percent │
+        │
+        │
+        │    Disassembly of section .text:
+        │
+        │    00000000006496c0 <char java.lang.String::charAt(int)>:
+   5.71 │      sub    $0x18,%rsp
+   3.42 │      cmp    0x8(%r15),%rsp          <--- stackoverflow check
+        │    ↓ jbe    c8
+   6.56 │      mov    0x10(%rdi),%rdx
+   3.42 │      lea    (%r14,%rdx,1),%rax      <--- get address of String.value into rax
+   3.61 │      cmpb   $0x0,0x18(%rdi)         <--- is latin1 check, inlined isLatin1()
+   3.86 │    ↓ je     94
+...
+   5.81 │94:   mov    %rax,%rcx
+   2.68 │      mov    %esi,0x14(%rsp)         <--- copy index (charAt parameter) to 0x14(%rsp) for call to StringLatin1.charAt (2nd param)
+   3.56 │      mov    %rcx,%rdi               <--- copy rax to rdi for call to StringLatin1.charAt (1st param)
+   9.59 │    → callq  _ZN22java.lang.StringLatin16charAtEJ4charP6byte[]i
+   3.13 │      subl   $0x1,0x10(%r15)
+   3.03 │    ↓ jle    b7
+   6.96 │b2:   add    $0x18,%rsp
+   3.95 │    ← retq
+        │b7: → callq  _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv
+        │    ↑ jmp    b2
+        │bf:   nop
+        │    → callq  _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv
+        │    ↑ jmp    8f
+        │c8:   mov    %esi,0x14(%rsp)
+        │    → callq  _ZN57com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl26throwNewStackOverflowErrorEJvv
+        │d2:   mov    %rax,%rcx
+        │    → callq  _ZN47com.oracle.svm.core.snippets.ImplicitExceptions28throwNewNullPointerExceptionEJvv
+#+end_src
+*** JMH generated code
+#+begin_src java
+public static void charAtLatin1_avgt_jmhStub(InfraControl control, RawResults result, BenchmarkParams benchmarkParams, IterationParams iterationParams, ThreadParams threadParams, Blackhole blackhole, Control notifyControl, int startRndMask, CharAt_jmhType l_charat0_0) throws Throwable {
+    long operations = 0;
+    long realTime = 0;
+    result.startTime = System.nanoTime();
+    do {
+        blackhole.consume(l_charat0_0.charAtLatin1());
+        operations++;
+    } while(!control.isDone);
+    result.stopTime = System.nanoTime();
+    result.realTime = realTime;
+    result.measuredOps = operations;
+}
+#+end_src
+#+begin_src bash
+Samples: 10K of event 'cycles:pp', 1000 Hz, Event count (approx.): 40667541169
+_ZN60org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest25charAtLatin1_avgt_jmhStubEJvP35org.openjdk.jmh.runner.InfraControlP34org.openjdk.jmh.results.RawResultsP37org.openjdk.jmh.infra.BenchmarkParamsP37org.openjdk.jmh.infra.IterationParamsP34org.openjdk.jmh.infra.ThreadParamsP31org.openjdk.jmh.infra.Blac
+Percent │
+        │
+        │
+        │     Disassembly of section .text:
+        │
+        │     0000000000bc6230 <void org.sample.strings.jmh_generated.CharAt_charAtLatin1_jmhTest::charAtLatin1_avgt_jmhStub(org.openjdk.jmh.runner.InfraControl*, org.openjdk.jmh.results.RawResults*, org.openjdk.jmh.infra.BenchmarkParams*, org.openjdk.jmh.infra.IterationParams*, org.openjdk.jmh.infra.ThreadParams*
+        │       sub        $0x38,%rsp
+        │       mov        %rdi,0x28(%rsp)
+        │       mov        %rsi,0x20(%rsp)
+        │       mov        %r9,0x18(%rsp)
+        │       mov        0x58(%rsp),%rax
+        │       mov        %rax,0x10(%rsp)
+        │       data16     xchg %ax,%ax
+        │       cmp        0x8(%r15),%rsp
+        │     ↓ jbe        149
+        │     → callq      _ZN16java.lang.System8nanoTimeEJlv
+        │       mov        0x20(%rsp),%rsi
+        │       cmp        %r14,%rsi
+        │     ↓ je         14f
+        │       mov        0x10(%rsp),%rcx
+        │       mov        %rax,0x28(%rsi)
+        │       cmp        %r14,%rcx
+        │     ↓ je         15a
+        │       mov        %rcx,%rdi
+        │       nop
+        │     → callq      _ZN25org.sample.strings.CharAt12charAtLatin1EJ4charv <--- invoke the benchmark once
+        │       mov        0x18(%rsp),%r9
+        │       cmp        %r14,%r9
+        │     ↓ je         166
+        │       mov        0x28(%rsp),%rdi
+        │       cmp        %r14,%rdi
+        │     ↓ je         176
+        │       cmpb       $0x0,0xdc(%rdi)                     <--- is done check
+        │     ↓ je         d7
+        │       movq       $0x1,0x30(%rsp)
+        │ 9f:   nop
+        │     → callq      _ZN16java.lang.System8nanoTimeEJlv  <--- is done so get end time
+        │       mov        0x20(%rsp),%rsi
+        │       mov        %rax,0x30(%rsi)
+        │       nop
+        │       movq       $0x0,0x20(%rsi)
+        │       nop
+        │       vcvtsi2sdq 0x30(%rsp),%xmm0,%xmm0
+        │       vmovsd     %xmm0,0x18(%rsi)
+        │       nop
+        │       nop
+        │       subl       $0x1,0x10(%r15)
+        │     ↓ jle        13c
+        │ d2:   add        $0x38,%rsp
+        │     ← retq
+        │ d7:   movq       $0x1,0x30(%rsp)                      <--- initialize number of operations to 1
+        │       mov        0x10(%rsp),%rax
+        │       data16     data16 nopw 0x0(%rax,%rax,1)
+   5.67 │ f0:┌─→nop
+   6.43 │    │  mov        %rax,%rdi
+   5.77 │    │→ callq      _ZN25org.sample.strings.CharAt12charAtLatin1EJ4charv
+   2.60 │    │  nop
+   3.27 │    │  nop
+   2.69 │    │  nop
+   6.34 │    │  nop
+   2.84 │    │  nop
+   2.98 │    │  nop
+   3.50 │    │  nop
+   2.84 │    │  mov        0x30(%rsp),%rax                     <--- copy operations to rax
+   6.33 │    │  inc        %rax                                <--- increment operations (rax)
+   3.78 │    │  nop
+   7.00 │    │  mov        0x28(%rsp),%rdi
+   5.67 │    │  cmpb       $0x0,0xdc(%rdi)                     <--- is done check
+   6.90 │    │↓ jne        132                                 <--- is done
+   3.41 │    │  subl       $0x1,0x10(%r15)
+   6.01 │    │↓ jle        181
+   5.77 │    │  mov        %rax,0x30(%rsp)
+   2.65 │    │  mov        0x10(%rsp),%rax
+   7.57 │    └──jmp        f0
+        │132:   mov        %rax,0x30(%rsp)                     <--- is done
+        │     ↑ jmpq       9f                                  <--- jump back up to get the time
+        │13c:   mov        0x30(%rsp),%rax
+        │     → callq      _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv
+        │       nop
+        │     ↑ jmp        d2
+        │149: → callq      _ZN57com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl26throwNewStackOverflowErrorEJvv
+        │       nop
+        │14f:   mov        0x28(%rsp),%rdi
+        │     → callq      _ZN47com.oracle.svm.core.snippets.ImplicitExceptions28throwNewNullPointerExceptionEJvv
+        │       nop
+        │15a:   mov        0x28(%rsp),%rdi
+        │       nop
+        │     → callq      _ZN47com.oracle.svm.core.snippets.ImplicitExceptions28throwNewNullPointerExceptionEJvv
+        │       nop
+        │166:   mov        0x20(%rsp),%rsi
+        │       mov        0x28(%rsp),%rdi
+        │     → callq      _ZN47com.oracle.svm.core.snippets.ImplicitExceptions28throwNewNullPointerExceptionEJvv
+        │       nop
+        │176:   mov        0x20(%rsp),%rsi
+        │     → callq      _ZN47com.oracle.svm.core.snippets.ImplicitExceptions28throwNewNullPointerExceptionEJvv
+        │       nop
+        │181:   mov        0x10(%rsp),%rcx
+        │       mov        0x18(%rsp),%r9
+        │       mov        0x20(%rsp),%rsi
+        │     → callq      _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv
+        │       nop
+        │       mov        %rax,0x30(%rsp)
+        │       mov        %rcx,%rax
+        │       xchg       %ax,%ax
+        │     ↑ jmpq       f0
+#+end_src
+*** StringLatin1.charAt
+#+begin_src bash
+  Samples: 10K of event 'cycles:pp', 1000 Hz, Event count (approx.): 40667541169
+  _ZN22java.lang.StringLatin16charAtEJ4charP6byte[]i  /root/1/fosdem/first-profile/target/benchmarks [Percent: local period]
+  Percent │    Disassembly of section .text:
+          │
+          │    0000000000663000 <char java.lang.StringLatin1::charAt(byte[]*, int)>:
+          │    0000000000663000 <char java.lang.StringLatin1::charAt(byte[]*, int)>:
+     4.89 │      sub    $0x18,%rsp
+     2.34 │      cmp    0x8(%r15),%rsp          <--- stackoverflow check
+          │    ↓ jbe    80
+     2.48 │      cmp    %r14,%rdi               <--- null check for rdi, which is the byte[]
+          │    ↓ je     8a
+     1.87 │      mov    0xc(%rdi),%eax          <--- read byte[] length into eax
+                                                <--- prepare arguments to call Preconditions.checkIndex
+     2.34 │      movabs $0x841310,%rdx
+     2.45 │      lea    (%r14,%rdx,1),%rdx      <--- obtain reference to Preconditions.SIOOBE_FORMATTER (3rd argument)
+     2.19 │      mov    %rdi,0x8(%rsp)          <--- copy byte[] to 0x8(%rsp)
+     2.27 │      mov    %esi,%edi               <--- prepare index (esi) parameter for call (1st argument)
+     4.93 │      mov    %esi,0x14(%rsp)
+     2.12 │      mov    %eax,%esi               <--- prepare byte[] length (eax) parameter for call (2nd argument)
+     2.52 │      mov    %eax,0x10(%rsp)
+     2.26 │      data16 xchg %ax,%ax
+                                                <--- invoke with index (edi), length (esi) and formatter (rdx)
+     4.28 │    → callq  _ZN31jdk.internal.util.Preconditions10checkIndexEJiiiP29java.util.function.BiFunction
+     2.23 │      mov    0x10(%rsp),%eax         <--- copy byte[] length back to eax
+     4.61 │      cmp    0x14(%rsp),%eax         <--- compare index and length for array out of bounds check
+          │    ↓ jbe    94
+     2.81 │      mov    0x8(%rsp),%rdi          <--- copy byte[] back to rdi
+     2.84 │      mov    0x14(%rsp),%eax         <--- copy index back to eax
+     1.98 │      movzbl 0x10(%rdi,%rax,1),%esi  <--- copies byte[index] to esi (byte[] rdi, index rax)
+                                                <--- movzbl zero extends the char to integer to make it unsigned
+                                                <---   equivalent of `& 0xFF` java code
+     5.07 │      subl   $0x1,0x10(%r15)         <--- safepoint check
+     2.19 │    ↓ jle    78
+     2.52 │71:   mov    %esi,%eax               <--- copy esi to eax to return the char
+     5.39 │      add    $0x18,%rsp              <--- method complete, reduce the stack size
+     2.66 │    ← retq
+          │78: → callq  _ZN36com.oracle.svm.core.thread.Safepoint27enterSlowPathSafepointCheckEJvv
+          │    ↑ jmp    71
+          │80:   mov    %esi,0x14(%rsp)
+          │    → callq  _ZN57com.oracle.svm.core.graal.snippets.StackOverflowCheckImpl26throwNewStackOverflowErrorEJvv
+          │8a:   mov    %esi,0x14(%rsp)
+          │    → callq  _ZN47com.oracle.svm.core.snippets.ImplicitExceptions28throwNewNullPointerExceptionEJvv
+          │94:   mov    0x14(%rsp),%esi
+          │      mov    %esi,%edi
+          │      mov    %eax,%esi
+          │    → callq  _ZN47com.oracle.svm.core.snippets.ImplicitExceptions36throwNewOutOfBoundsExceptionWithArgsEJvii
+          │      nop
+#+end_src
+** run benchmark
+#+begin_src bash
+$ java -jar target/benchmarks.jar -prof org.mendrugo.fibula.PerfDwarfProfiler:events=cycles:pp
+# JMH version: fibula:999-SNAPSHOT
+# VM version: JDK 21.0.2, Substrate VM, GraalVM CE 21.0.2+13.1
+# *** WARNING: This VM is not supported by JMH. The produced benchmark data can be completely wrong.
+# VM invoker: target/benchmarks
+...
+Secondary result "org.sample.strings.CharAt.charAtLatin1:asm":
+Perf binary output saved to ./org.sample.strings.CharAt.charAtLatin1-AverageTime.perfbin
+...
+Secondary result "org.sample.strings.CharAt.charAtUtf16:asm":
+Perf binary output saved to ./org.sample.strings.CharAt.charAtUtf16-AverageTime.perfbin
+#+end_src
+** mvn package
+#+begin_src bash
+$ mvn package -Ddebug=true -DbuildArgs=-H:-DeleteLocalSymbols,-H:+SourceLevelDebug,-H:+TrackNodeSourcePosition,-H:+DebugCodeInfoUseSourceMappings
+...
+========================================================================================================================
+GraalVM Native Image: Generating 'benchmarks' (executable)...
+========================================================================================================================
+...
+------------------------------------------------------------------------------------------------------------------------
+ 3 experimental option(s) unlocked:
+ - '-H:+DebugCodeInfoUseSourceMappings' (origin(s): command line)
+ - '-H:-DeleteLocalSymbols' (origin(s): command line)
+ - '-H:+SourceLevelDebug' (origin(s): command line)
+------------------------------------------------------------------------------------------------------------------------
+...
+Produced artifacts:
+ /root/1/fosdem/first-profile/target/benchmarks (executable)
+ /root/1/fosdem/first-profile/target/benchmarks.debug (debug_info)
+ /root/1/fosdem/first-profile/target/sources (debug_info)
+========================================================================================================================
+Finished generating 'benchmarks' in 45.5s.
+#+end_src
+* First Run
+** run benchmark
+#+begin_src bash
+$ java -jar target/benchmarks.jar
+# JMH version: fibula:999-SNAPSHOT
+# VM version: JDK 21.0.2, Substrate VM, GraalVM CE 21.0.2+13.1
+# *** WARNING: This VM is not supported by JMH. The produced benchmark data can be completely wrong.
+# VM invoker: target/benchmarks
+...
+Benchmark            Mode  Cnt  Score   Error  Units
+CharAt.charAtLatin1  avgt    5  6.601 ± 0.003  ns/op
+CharAt.charAtUtf16   avgt    5  5.142 ± 0.002  ns/op
+#+end_src
+** mvn package
+#+begin_src bash
+$ mvn package
+...
+[INFO] --- compiler:3.12.1:compile (default-compile) @ strings ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 1 source file with javac [debug release 21] to target/classes
+[INFO] Write reflection configuration
+[INFO] GraalVM blackhole mode resolved: enabled (JDK 21 or earlier)
+...
+[INFO] --- shade:3.6.0:shade (default) @ strings ---
+[INFO] Including org.mendrugo.fibula:fibula-core:jar:999-SNAPSHOT in the shaded jar.
+[INFO] Including org.openjdk.jmh:jmh-core:jar:1.37 in the shaded jar.
+[INFO] Including net.sf.jopt-simple:jopt-simple:jar:5.0.4 in the shaded jar.
+[INFO] Including org.apache.commons:commons-math3:jar:3.6.1 in the shaded jar.
+[INFO] Replacing /root/1/fosdem/first-run/target/benchmarks.jar with /root/1/fosdem/first-run/target/strings-1.0.0-SNAPSHOT-shaded.jar
+...
+[INFO] --- native:0.10.3:compile-no-fork (build-native) @ strings ---
+[INFO] Found GraalVM installation from JAVA_HOME variable.
+[INFO] Downloaded GraalVM reachability metadata repository from file:/root/.m2/repository/org/graalvm/buildtools/graalvm-reachability-metadata/0.10.3/graalvm-reachability-metadata-0.10.3-repository.zip
+[INFO] Executing: /root/opt/graal-21/bin/native-image -cp /root/1/fosdem/first-run/target/strings-1.0.0-SNAPSHOT.jar:/root/.m2/repository/org/mendrugo/fibula/fibula-core/999-SNAPSHOT/fibula-core-999-SNAPSHOT.jar:/root/.m2/repository/org/openjdk/jmh/jmh-core/1.37/jmh-core-1.37.jar:/root/.m2/repository/net/sf/jopt-simple/jopt-simple/5.0.4/jopt-simple-5.0.4.jar:/root/.m2/repository/org/apache/commons/commons-math3/3.6.1/commons-math3-3.6.1.jar --no-fallback -o /root/1/fosdem/first-run/target/benchmarks org.mendrugo.fibula.NativeForkedMain
+WARNING: Unknown module: jdk.graal.compiler specified to --add-exports
+========================================================================================================================
+GraalVM Native Image: Generating 'benchmarks' (executable)...
+========================================================================================================================
+...
+Finished generating 'benchmarks' in 27.5s.
+#+end_src
+* Benchmark
+#+begin_src java
+public static void charAtLatin1_avgt_jmhStub(InfraControl control, RawResults result, BenchmarkParams benchmarkParams, IterationParams iterationParams, ThreadParams threadParams, Blackhole blackhole, Control notifyControl, int startRndMask, CharAt_jmhType l_charat0_0) throws Throwable {
+    long operations = 0;
+    long realTime = 0;
+    result.startTime = System.nanoTime();
+    do {
+        blackhole.consume(l_charat0_0.charAtLatin1());
+        operations++;
+    } while(!control.isDone);
+    result.stopTime = System.nanoTime();
+    result.realTime = realTime;
+    result.measuredOps = operations;
+}
+#+end_src
+#+begin_src java
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 10, time = 500, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 5, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+@Fork(1)
+public class CharAt
+{
+    private String[] values;
+    private int charAtIndex;
+
+    @Setup
+    public void setup()
+    {
+        values = new String[2];
+        values[0] = "Latin1 string";
+        values[1] = "UTF-\uFF11\uFF16 string";
+        charAtIndex = 3;
+    }
+
+    @Benchmark
+    public char charAtLatin1()
+    {
+        final String strLatin1 = values[0];
+        return strLatin1.charAt(charAtIndex);
+    }
+
+    @Benchmark
+    public char charAtUtf16()
+    {
+        final String strUtf16 = values[1];
+        return strUtf16.charAt(charAtIndex);
+    }
+}
+#+end_src
