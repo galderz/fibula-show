@@ -5,11 +5,7 @@
 `String.charAt` JMH benchmark:
 ```java
 @BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.NANOSECONDS)
-@State(Scope.Thread)
-@Warmup(iterations = 10, time = 500, timeUnit = TimeUnit.MILLISECONDS)
-@Measurement(iterations = 5, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
-@Fork(1)
+// ...
 public class CharAt {
     private String[] values;
     private int charAtIndex;
@@ -36,8 +32,11 @@ public class CharAt {
 }
 ```
 
-For reference, this is what `String.charAt` implementation looks like:
+For reference, this is what `String.charAt` implementation looks like and related code:
 ```java
+private final byte coder;
+@Native static final byte LATIN1 = 0;
+
 public char charAt(int index) {
     if (isLatin1()) {
         return StringLatin1.charAt(value, index);
@@ -45,6 +44,18 @@ public char charAt(int index) {
         return StringUTF16.charAt(value, index);
     }
 }
+
+boolean isLatin1() {
+    return /* ... */ && coder == LATIN1;
+}
+```
+
+`StringLatin1.charAt`:
+```java
+    public static char charAt(byte[] value, int index) {
+        checkIndex(index, value.length);
+        return (char)(value[index] & 0xff);
+    }
 ```
 
 Generated JMH source code:
@@ -71,6 +82,8 @@ java -jar target/benchmarks.jar
 Question: Is this fast or is it slow?
 
 Question: Considerable difference between latin and utf16 numbers, why is it that?
+
+Another question: who am I?
 
 # First Profile
 
@@ -125,7 +138,7 @@ How can we verify that indeed the inlining improvements really happened?
 We can profile it just like we did before.
 
 ```shell
-java -jar target/benchmarks.jar -prof org.mendrugo.fibula.PerfDwarfProfiler:events=cycles:pp
+perf annotate -i org.sample.strings.CharAt.charAtLatin1-AverageTime.perfbin
 ```
 
 We now know at least one reason why utf16 was faster than latin1.
@@ -142,16 +155,14 @@ We can compare those numbers with the HotSpot JIT:
 mvn package -Djvm.mode
 ```
 
-```shell
-java -jar target/benchmarks.jar
-```
-
-JIT achieves better numbers,
-but how does it achieve those?
+Run with perfasm:
 
 ```shell
 java -jar target/benchmarks.jar -prof perfasm
 ```
+
+JIT achieves better numbers,
+but how does it achieve those?
 
 More aggressive inlining.
 This is something JITs can do because they know what is hot vs AOT.
