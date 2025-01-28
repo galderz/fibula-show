@@ -30,6 +30,8 @@ class CharAt {
 }
 ```
 
+Why this benchmark? E.g. web frameworks http header validation.
+
 For reference, this is what `String.charAt` implementation looks like and related code:
 ```java
 class String
@@ -223,35 +225,35 @@ Loop is unrolled, 8 times.
 
 New tab and rename:
 ```shell
-cd 1/fosdem.present/first-run && graal-21 && ./prepare.sh
+cd $HOME/1/fosdem.present/first-run && graal-21 && ./prepare.sh && clear
 ```
 
 New tab and rename:
 ```shell
-cd 1/fosdem.present/first-profile && graal-21 && ./prepare.sh
+cd $HOME/1/fosdem.present/first-profile && graal-21 && ./prepare.sh && clear
 ```
 
 New tab and rename:
 ```shell
-cd 1/fosdem.present/trivial-run && graal-21 && ./prepare.sh
+cd $HOME/1/fosdem.present/trivial-run && graal-21 && ./prepare.sh && clear
 ```
 
 New tab and rename:
 ```shell
-cd 1/fosdem.present/trivial-profile && graal-21 && ./prepare.sh
+cd $HOME/1/fosdem.present/trivial-profile && graal-21 && ./prepare.sh && clear
 ```
 
 New tab and rename:
 ```shell
-cd 1/fosdem.present/hotspot && maven-21 && ./prepare.sh
+cd $HOME/1/fosdem.present/hotspot && maven-21 && ./prepare.sh && clear
 ```
 
 New tab and rename:
 ```shell
-cd 1/fosdem.present/pgo-run && ee-graal-21 && ./prepare.sh
+cd $HOME/1/fosdem.present/pgo-run && ee-graal-21 && ./prepare.sh && clear
 ```
 
 New tab and rename:
 ```shell
-cd 1/fosdem.present/pgo-profile && ee-graal-21 && ./prepare.sh
+cd $HOME/1/fosdem.present/pgo-profile && ee-graal-21 && ./prepare.sh && clear
 ```
