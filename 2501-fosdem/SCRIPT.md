@@ -6,12 +6,12 @@
 ```java
 @BenchmarkMode(Mode.AverageTime)
 // ...
-public class CharAt {
-    private String[] values;
-    private int charAtIndex;
+class CharAt {
+    String[] values;
+    int charAtIndex;
 
     @Setup
-    public void setup() {
+    void setup() {
         values = new String[2];
         values[0] = "Latin1 string";
         values[1] = "UTF-\uFF11\uFF16 string";
@@ -19,58 +19,80 @@ public class CharAt {
     }
 
     @Benchmark
-    public char charAtLatin1() {
-        final String strLatin1 = values[0];
-        return strLatin1.charAt(charAtIndex);
+    char charAtLatin1() {
+        return values[0].charAt(charAtIndex);
     }
 
     @Benchmark
-    public char charAtUtf16() {
-        final String strUtf16 = values[1];
-        return strUtf16.charAt(charAtIndex);
+    char charAtUtf16() {
+        return values[1].charAt(charAtIndex);
     }
 }
 ```
 
 For reference, this is what `String.charAt` implementation looks like and related code:
 ```java
-private final byte coder;
-@Native static final byte LATIN1 = 0;
+class String
+{
+    static final byte LATIN1 = 0;
+    final byte[] value;
+    final byte coder;
 
-public char charAt(int index) {
-    if (isLatin1()) {
-        return StringLatin1.charAt(value, index);
-    } else {
-        return StringUTF16.charAt(value, index);
+    char charAt(int index)
+    {
+        if (isLatin1())
+        {
+            return StringLatin1.charAt(value, index);
+        }
+        else
+        {
+            return StringUTF16.charAt(value, index);
+        }
     }
-}
 
-boolean isLatin1() {
-    return /* ... */ && coder == LATIN1;
+    boolean isLatin1()
+    {
+        return /* ... */ && coder == LATIN1;
+    }
 }
 ```
 
 `StringLatin1.charAt`:
 ```java
-    public static char charAt(byte[] value, int index) {
+class StringLatin1
+{
+    static char charAt(byte[] value, int index)
+    {
         checkIndex(index, value.length);
         return (char)(value[index] & 0xff);
     }
+}
 ```
 
 Generated JMH source code:
 ```java
-public static void charAtLatin1_avgt_jmhStub(InfraControl control, RawResults result, BenchmarkParams benchmarkParams, IterationParams iterationParams, ThreadParams threadParams, Blackhole blackhole, Control notifyControl, int startRndMask, CharAt_jmhType l_charat0_0) throws Throwable {
-    long operations = 0;
-    long realTime = 0;
-    result.startTime = System.nanoTime();
-    do {
-        blackhole.consume(l_charat0_0.charAtLatin1());
-        operations++;
-    } while(!control.isDone);
-    result.stopTime = System.nanoTime();
-    result.realTime = realTime;
-    result.measuredOps = operations;
+class CharAt_charAtLatin1_jmhTest
+{
+    public static void charAtLatin1_avgt_jmhStub(
+        InfraControl control
+        , RawResults result
+        , Blackhole blackhole
+        , CharAt_jmhType l_charat0_0
+    ) throws Throwable
+    {
+        long operations = 0;
+        long realTime = 0;
+        result.startTime = System.nanoTime();
+        do
+        {
+            blackhole.consume(l_charat0_0.charAtLatin1());
+            operations++;
+        }
+        while(!control.isDone);
+        result.stopTime = System.nanoTime();
+        result.realTime = realTime;
+        result.measuredOps = operations;
+    }
 }
 ```
 
