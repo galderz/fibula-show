@@ -6,8 +6,8 @@ Show and explain `CharAt.java`
 
 Build benchmark:
 ```shell
-cd first-run && graal-21
-mvn package
+export JAVA_HOME=/opt/graalvm-community-openjdk-21.0.2+13.1
+mvn clean package
 ```
 
 Run benchmark:
@@ -32,8 +32,8 @@ Affects how compilation is done and can slow down execution.
 * `-H:+DebugCodeInfoUseSourceMappings` forces using source mappings in debug info.
 Affects how compilation is done and can slow down execution.
 ```shell
-cd first-profile && graal-21
-mvn package -Ddebug=true -DbuildArgs=-H:-DeleteLocalSymbols,-H:+SourceLevelDebug,-H:+TrackNodeSourcePosition,-H:+DebugCodeInfoUseSourceMappings
+export JAVA_HOME=/opt/graalvm-community-openjdk-21.0.2+13.1
+mvn clean package -Ddebug=true -DbuildArgs=-H:-DeleteLocalSymbols,-H:+SourceLevelDebug,-H:+TrackNodeSourcePosition,-H:+DebugCodeInfoUseSourceMappings
 ```
 
 Use a custom profiler wrapping the native invocation around a `perf record` call with DWARF call graph.
@@ -50,7 +50,6 @@ perf annotate -i org.sample.strings.CharAt.charAtLatin1-AverageTime.perfbin
 * `StringLatin1.charAt` displayed which means it didn't get inlined into `String.charAt` (show source code).
 * Show the JMH generated source code, that calls into `CharAt.charAtLatin1`.
 * Show `String.charAt` that shows invoking `StringLatin1.charAt`.
-[todo any other observations]
 
 How does this differ to with the utf16 version?
 ```shell
@@ -72,8 +71,8 @@ The default value is 20.
 What happens when we double that, say to 40?
 
 ```shell
-cd trivial-run
-mvn package -DbuildArgs=-H:MaxNodesInTrivialMethod=40
+export JAVA_HOME=/opt/graalvm-community-openjdk-21.0.2+13.1
+mvn clean package -DbuildArgs=-H:MaxNodesInTrivialMethod=40
 ```
 
 Now run the benchmark:
@@ -89,8 +88,8 @@ How can we verify that indeed the inlining improvements really happened?
 We can profile it just like we did before
 
 ```shell
-cd trivial-profile
-mvn package -Ddebug=true -DbuildArgs=-H:-DeleteLocalSymbols,-H:+SourceLevelDebug,-H:+TrackNodeSourcePosition,-H:+DebugCodeInfoUseSourceMappings,-H:MaxNodesInTrivialMethod=40
+export JAVA_HOME=/opt/graalvm-community-openjdk-21.0.2+13.1
+mvn clean package -Ddebug=true -DbuildArgs=-H:-DeleteLocalSymbols,-H:+SourceLevelDebug,-H:+TrackNodeSourcePosition,-H:+DebugCodeInfoUseSourceMappings,-H:MaxNodesInTrivialMethod=40
 ```
 
 `StringLatin1.charAt` has been inlined into `String.charAt`,
@@ -103,8 +102,7 @@ Are these numbers we get with native image slow or fast?
 
 We can build the same project to run with JVM mode:
 ```shell
-cd hotspot
-maven-11
+export JAVA_HOME=/opt/jdk-21.0.1+12
 mvn package -Djvm.mode
 ```
 
@@ -133,8 +131,7 @@ Can native image be as fast as hotspot?
 What if we use PGO?
 
 ```shell
-cd pgo-run
-ee-graal-21
+export JAVA_HOME=/opt/graalvm-jdk-21.0.5+9.1
 mvn package -Dpgo
 ```
 
@@ -150,8 +147,7 @@ But why does this happen?
 
 We can apply the same profiling that we did before, first build it:
 ```shell
-cd pgo-profile
-ee-graal-21
+export JAVA_HOME=/opt/graalvm-jdk-21.0.5+9.1
 mvn package -Dpgo.perf
 ```
 
@@ -165,10 +161,7 @@ Finally inspect the perf binary file:
 perf annotate -i org.sample.strings.CharAt.charAtLatin1-AverageTime.perfbin
 ```
 
-Observations:
-* [todo]
-
 # What is skidding?
 
-https://easyperf.net/blog/2018/06/08/Advanced-profiling-topics-PEBS-and-LBR
-https://easyperf.net/blog/2018/08/29/Understanding-performance-events-skid
+* https://easyperf.net/blog/2018/06/08/Advanced-profiling-topics-PEBS-and-LBR
+* https://easyperf.net/blog/2018/08/29/Understanding-performance-events-skid
