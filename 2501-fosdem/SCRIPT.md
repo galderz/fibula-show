@@ -182,7 +182,7 @@ mvn package -Djvm.mode
 Run with perfasm:
 
 ```shell
-java -jar target/benchmarks.jar -prof perfasm
+java -jar target/benchmarks.jar -prof perfasm charAtLatin1
 ```
 
 JIT achieves better numbers,
