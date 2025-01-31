@@ -2,6 +2,7 @@ package org.sample.strings;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.CompilerControl;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
@@ -12,6 +13,8 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
 import java.util.concurrent.TimeUnit;
+
+import static org.openjdk.jmh.annotations.CompilerControl.Mode.*;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
@@ -34,6 +37,7 @@ public class CharAt
     }
 
     @Benchmark
+    @CompilerControl(DONT_INLINE)
     public char charAtLatin1()
     {
         final String strLatin1 = values[0];
@@ -41,6 +45,7 @@ public class CharAt
     }
 
     @Benchmark
+    @CompilerControl(DONT_INLINE)
     public char charAtUtf16()
     {
         final String strUtf16 = values[1];
