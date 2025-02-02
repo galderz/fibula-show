@@ -257,3 +257,8 @@ New tab and rename:
 ```shell
 cd $HOME/1/fosdem.present/pgo-profile && ee-graal-21 && ./prepare.sh && clear
 ```
+
+New tab and rename:
+```shell
+cd $HOME/1/fosdem.present/pgo-profile && clear
+```
