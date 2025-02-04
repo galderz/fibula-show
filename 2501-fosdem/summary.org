@@ -1,3 +1,12 @@
+* Master Profile
+* Master Run
+Commit 2.2.25:
+2267241c8fdee0510da604196e9d60eebad2bb71
+#+begin_src bash
+Benchmark            Mode  Cnt  Score   Error  Units
+CharAt.charAtLatin1  avgt    5  3.986 ± 0.002  ns/op
+CharAt.charAtUtf16   avgt    5  4.416 ± 0.006  ns/op
+#+end_src
 * PGO Profile
 ** annotate latin1
 #+begin_src bash
