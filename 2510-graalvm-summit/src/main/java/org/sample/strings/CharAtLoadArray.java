@@ -34,14 +34,14 @@ public class CharAtLoadArray
     }
 
     @Benchmark
-    public char charAtLatin1()
+    public char latin1()
     {
         final String strLatin1 = values[0];
         return strLatin1.charAt(charAtIndex);
     }
 
     @Benchmark
-    public char charAtUtf16()
+    public char utf16()
     {
         final String strUtf16 = values[1];
         return strUtf16.charAt(charAtIndex);

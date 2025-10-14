@@ -34,13 +34,13 @@ public class CharAt
     }
 
     @Benchmark
-    public char charAtLatin1()
+    public char latin1()
     {
         return strLatin1.charAt(charAtIndex);
     }
 
     @Benchmark
-    public char charAtUtf16()
+    public char utf16()
     {
         return strUtf16.charAt(charAtIndex);
     }
