@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 10, time = 500, timeUnit = TimeUnit.MILLISECONDS)
 @Measurement(iterations = 5, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
 @Fork(1)
-public class CharAt
+public class CharAtLoadArray
 {
     private String[] values;
     private int charAtIndex;
