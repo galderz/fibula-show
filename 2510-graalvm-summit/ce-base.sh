@@ -2,11 +2,11 @@
 
 set -ex
 
+dir="logs/ce-base"
 java_home="$HOME/opt/graalvm-25"
 java="$java_home/bin/java"
 mvn="$HOME/opt/maven/bin/mvn"
 benchmark="CharAt"
-dir="logs/ce-base"
 
 mkdir -p $dir
 
