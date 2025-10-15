@@ -22,14 +22,12 @@ import java.util.concurrent.TimeUnit;
 public class CharAt
 {
     private String strLatin1;
-    private String strUtf16;
     private int charAtIndex;
 
     @Setup
     public void setup()
     {
         strLatin1 = "Latin1 string";
-        strUtf16 = "UTF-\uFF11\uFF16 string";
         charAtIndex = 3;
     }
 
@@ -37,11 +35,5 @@ public class CharAt
     public char latin1()
     {
         return strLatin1.charAt(charAtIndex);
-    }
-
-    @Benchmark
-    public char utf16()
-    {
-        return strUtf16.charAt(charAtIndex);
     }
 }

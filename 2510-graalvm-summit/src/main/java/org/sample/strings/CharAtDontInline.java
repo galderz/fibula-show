@@ -25,14 +25,12 @@ import static org.openjdk.jmh.annotations.CompilerControl.Mode.*;
 public class CharAtDontInline
 {
     private String strLatin1;
-    private String strUtf16;
     private int charAtIndex;
 
     @Setup
     public void setup()
     {
         strLatin1 = "Latin1 string";
-        strUtf16 = "UTF-\uFF11\uFF16 string";
         charAtIndex = 3;
     }
 
@@ -41,12 +39,5 @@ public class CharAtDontInline
     public char latin1()
     {
         return strLatin1.charAt(charAtIndex);
-    }
-
-    @Benchmark
-    @CompilerControl(DONT_INLINE)
-    public char utf16()
-    {
-        return strUtf16.charAt(charAtIndex);
     }
 }

@@ -30,9 +30,8 @@ public class CharAtLoadArray
     @Setup
     public void setup()
     {
-        values = new String[2];
+        values = new String[1];
         values[0] = "Latin1 string";
-        values[1] = "UTF-\uFF11\uFF16 string";
         charAtIndex = 3;
     }
 
@@ -42,13 +41,5 @@ public class CharAtLoadArray
     {
         final String strLatin1 = values[0];
         return strLatin1.charAt(charAtIndex);
-    }
-
-    @Benchmark
-    @CompilerControl(DONT_INLINE)
-    public char utf16()
-    {
-        final String strUtf16 = values[1];
-        return strUtf16.charAt(charAtIndex);
     }
 }
