@@ -2,6 +2,8 @@
 
 set -ex
 
+rm -drf logs
+
 ./aot.sh CharAt graalvm-25
 ./aot.sh CharAt ee-graalvm-25
 ./hotspot.sh CharAt
