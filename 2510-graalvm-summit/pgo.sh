@@ -3,9 +3,10 @@
 set -ex
 
 benchmark=$1
+java_name="ee-graalvm-25"
 
 dir="logs/pgo-$java_name-$benchmark"
-java_home="$HOME/opt/ee-graalvm-25"
+java_home="$HOME/opt/$java_name"
 java="$java_home/bin/java"
 mvn="$HOME/opt/maven/bin/mvn"
 
