@@ -1,6 +1,5 @@
 let
-  stable = import (builtins.fetchTarball
-    "https://github.com/NixOS/nixpkgs/archive/nixos-25.05.tar.gz") { };
+  stable = import <nixpkgs> { };
 
   unstable = import (builtins.fetchTarball
     "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") { };
