@@ -2,7 +2,11 @@ let
   stable = import <nixpkgs> { };
 
   unstable = import (builtins.fetchTarball
-    "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") { };
+    "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") {
+      config = {
+        allowUnfree = true;
+      };
+    };
 in
 stable.mkShell {
   pakages = with stable; [
