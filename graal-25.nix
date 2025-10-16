@@ -6,7 +6,7 @@ let
     "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") { };
 in
 stable.mkShell {
-  packages = with stable; [
+  pkgs = with stable; [
     git
     maven
     zsh
