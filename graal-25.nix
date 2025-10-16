@@ -12,6 +12,7 @@ stable.mkShell {
   pakages = with stable; [
     git
     maven
+    pahole
     zsh
   ] ++ [
     unstable.graalvmPackages.graalvm-ce
