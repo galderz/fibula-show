@@ -6,18 +6,18 @@ let
     "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") { };
 in
 stable.mkShell {
-  pkgs = with stable; [
+  pakages = with stable; [
     git
     maven
     zsh
   ] ++ [
-    unstable.graalvm-ce
-    unstable.graalvm-oracle
+    unstable.graalvmPackages.graalvm-ce
+    unstable.graalvmPackages.graalvm-oracle
   ];
 
-  GRAALVM_EE_HOME="${pkgs.graalvmPackages.graalvm-oracle}";
-  JAVA_HOME="${pkgs.graalvmPackages.graalvm-ce}";
-  MAVEN_HOME="${pkgs.maven}";
+  GRAALVM_EE_HOME="${unstable.graalvmPackages.graalvm-oracle}";
+  JAVA_HOME="${unstable.graalvmPackages.graalvm-ce}";
+  MAVEN_HOME="${stable.maven}";
   NATIVE_IMAGE_OPTIONS="-H:-CheckToolchain";
 
   shellHook = ''
