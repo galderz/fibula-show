@@ -114,9 +114,9 @@ The `perf annotate` output for Oracle GraalVM shows that the call chain from `Ch
 ```bash
 Percent       0xc1c3e0 <void org.sample.strings.jmh_generated.CharAt_latin1_jmhTest::latin1_avgt_jmhStub(org.openjdk.jmh.runner.InfraControl*, org.openjdk.jmh.results.RawResults*, org.openjdk.jmh.infra.BenchmarkParams*, org.openjdk.jmh.infra.IterationParams*, org.openjdk.jmh.infra.ThreadParams*, org.openjdk.jmh.infra.Blackhole*, org.openjdk.jmh.infra.Control*, org.sample.strings.jmh_generated.CharAt_jmhType*)>:
   11.90   e0:   nop             
-                leaq       0x69e038(%r14),%rdx    ;; store byte[] backing String at fixed address into rdx
-                movl       0x8(%rcx),%ebx         ;; store charAtIndex into ebx
-                movzbl     0x8(%rdx,%rbx),%ebx    ;; value[index] & 0xff (rdx=byte[], rbx=index)
+                leaq       0x69e038(%r14),%rdx    ;; store byte[] backing String at fixed address into rdx (r14="Latin1 string")
+                movl       0x8(%rcx),%ebx         ;; store index into ebx (rcx=CharAt, 0x8(%rcx)=CharAt.charAtIndex)
+                movzbl     0x8(%rdx,%rbx),%ebx    ;; computes `value[index] & 0xff` (rdx=byte[] value, rbx=int index)
                 incq       %rax                   ;; operations++ 
    8.34         cmpl       $0x0,0x10(%r15)        ;; isDone check
    0.19       ↑ jg         e0   
