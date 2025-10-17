@@ -270,8 +270,8 @@ a0:   movq       0x10(%rsp),%rax
 ### Bound Check
 
 As per `StringLatin1.charAt` java source code implementation,
-the byte[] array length should be checked against the index,
-but instead Oracle GraalVM code is checking the index against the hardcoded value of the String's byte[] length of `13`:
+the `byte[]` length should be checked against the index,
+but instead Oracle GraalVM code is checking the index against the hardcoded value of the String's `byte[]` length of `13`:
 
 ```bash
     0xc19e60 <char org.sample.strings.DontInlineCharAt::latin1()>:
@@ -288,8 +288,8 @@ but instead Oracle GraalVM code is checking the index against the hardcoded valu
     → callq  java.lang.RuntimeException* jdk.internal.util.Preconditions::outOfBoundsCheckIndex(java.util.function.BiFunction*, int, int)
 ```
 
-In GraalVM CE, we observe that the `len` field is extracted from the `byte[]` (in position 12 (`0xc`) as per the struct for byte[]),
-and if the index parameter is bigger than the length it jumps to section that produces an out of bounds runtime exception:
+In GraalVM CE, we observe that the `len` field is extracted from the `byte[]` (in position `12` (`0xc`) as per the struct for `byte[]`),
+and if the index parameter is bigger or equals than the length it jumps to section that produces an out of bounds runtime exception:
 
 ```bash
 char java.lang.StringLatin1::charAt(byte[]*, int)() /home/g/src/fibula-show/2510-graalvm-summit/target/benchmarks
