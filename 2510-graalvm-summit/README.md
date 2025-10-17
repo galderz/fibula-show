@@ -1,4 +1,6 @@
-# TBD
+# Native Benchmarking with JMH
+
+## Source Code
 
 Base `CharAt` benchmark:
 ```java
@@ -85,6 +87,8 @@ class CharAt_latin1_jmhTest
 }
 ```
 
+## Ahead-of-time Benchmarking
+
 With GraalVM CE 25:
 
 ```bash
@@ -108,12 +112,53 @@ CharAt.latin1  avgt    5  0.813 ±  0.001  ns/op
 That's roughly a 3.6x difference in performance.
 What makes Oracle GraalVM faster?
 
-TODO: analyse structs
+### Structs
 
-In Oracle GraalVM `CharAt` gets mapped to a struct like this:
+There are differences in the structs that GraalVM CE and Oracle GraalVM use.
+Although these differences do not explain the performance difference,
+they will be useful guide for further analysis.
+Below can be found the struct definitions for `org.sample.strings.CharAt` and `java.lang.String` classes.
+
+GraalVM CE:
 
 ```bash
-(gdb) ptype /o 'org.sample.strings.CharAt'
+/* offset      |    size */  type = class org.sample.strings.CharAt : public java.lang.Object {
+/*      8      |       8 */    class _z_.java.lang.String *strLatin1;
+/*     16      |       4 */    int charAtIndex;
+/* XXX  4-byte padding   */
+                               /* total size (bytes):   24 */
+
+/* offset      |    size */  type = class java.lang.String : public java.lang.Object {
+/*      8      |       8 */    class _z_.byte[] *value;
+/*     16      |       4 */    int hash;
+/*     20      |       1 */    byte coder;
+/*     21      |       1 */    boolean hashIsZero;
+                               static class _z_.java.io.ObjectStreamField[] *serialPersistentFields;
+                             public:
+                               static class _z_.java.util.Comparator *CASE_INSENSITIVE_ORDER;
+                             private:
+                               static long serialVersionUID;
+                               static char REPL;
+                             public:
+                               static byte LATIN1;
+                               static byte UTF16;
+                               static boolean COMPACT_STRINGS;
+/* XXX 10-byte padding   */
+                               /* total size (bytes):   32 */
+                             }
+
+/* offset      |    size */  type = class byte [] : public java.lang.Object {
+                             public:
+/*     12      |       4 */    int len;
+/*     16      |       0 */    byte data[0];
+
+                               /* total size (bytes):   16 */
+                             }
+```
+
+Oracle GraalVM:
+
+```bash
 /* offset      |    size */  type = class org.sample.strings.CharAt : public java.lang.Object {
 /*      4      |       4 */    class _z_.java.lang.String *strLatin1;
 /*      8      |       4 */    int charAtIndex;
@@ -121,7 +166,36 @@ In Oracle GraalVM `CharAt` gets mapped to a struct like this:
 
                                /* total size (bytes):   16 */
                              }
+/* offset      |    size */  type = class java.lang.String : public java.lang.Object {
+/*      4      |       4 */    class _z_.byte[] *value;
+/*      8      |       4 */    int hash;
+/*     12      |       1 */    byte coder;
+/*     13      |       1 */    boolean hashIsZero;
+                               static class _z_.java.io.ObjectStreamField[] *serialPersistentFields;
+                             public:
+                               static class _z_.java.util.Comparator *CASE_INSENSITIVE_ORDER;
+                             private:
+                               static long serialVersionUID;
+                               static char REPL;
+                             public:
+                               static byte LATIN1;
+                               static byte UTF16;
+                               static boolean COMPACT_STRINGS;
+/* XXX  2-byte padding   */
+
+                               /* total size (bytes):   16 */
+                             }
+
+/* offset      |    size */  type = class byte [] : public java.lang.Object {
+                             public:
+/*      4      |       4 */    int len;
+/*      8      |       0 */    byte data[0];
+
+                               /* total size (bytes):    8 */
+                             }
 ```
+
+### Inlining
 
 The `perf annotate` output for Oracle GraalVM shows that the call chain from `CharAt.latin1` all the way down to `StringLatin1.charAt` has been inlined:
 
@@ -178,12 +252,9 @@ DontInlineCharAt.latin1  avgt    5  2.182 ± 0.022  ns/op # Oracle GraalVM 25
 
 The difference is now ~2x.
 In Oracle GraalVM we can verify that the top level inlining into the JMH generated code didn't happen,
-but further down the aggressive inlining happens.
-But, some debatable things are happening as well.
-For example, as per `StringLatin1.charAt` implementation,
-the byte[] array length should be checked against the index,
-but instead the code is checking the index against the hardcoded value of the String's byte[] length of 13:
+but further down the aggressive inlining happens:
 
+```bash
 ```bash
     0xc1f460 <void org.sample.strings.jmh_generated.DontInlineCharAt_latin1_jmhTest::latin1_avgt_jmhStub(org.openjdk.jmh.runner.InfraControl*, org.openjdk.jmh.results.RawResults*, org.openjdk.jmh.infra.BenchmarkParams*, org.openjdk.jmh.infra.IterationParams*, org.openjdk.jmh.infra.ThreadParams*, org.openjdk.jmh.infra.Blackhole*, org.openjdk.jmh.infra.Control*, org.sample.strings.jmh_generated.DontInlineCharAt_jmhType*)>:
 a0:   movq       0x10(%rsp),%rax
@@ -192,6 +263,17 @@ a0:   movq       0x10(%rsp),%rax
       incq       %rax                                                  ;; operations++
     ↑ jmp        a0
 
+    0xc19e60 <char org.sample.strings.DontInlineCharAt::latin1()>:
+      movzbl 0x8(%rdi,%rax),%eax    ;; computes `value[index] & 0xff` (rdi=byte[] value, rax=int index)
+```
+
+### Bound Check
+
+As per `StringLatin1.charAt` java source code implementation,
+the byte[] array length should be checked against the index,
+but instead Oracle GraalVM code is checking the index against the hardcoded value of the String's byte[] length of `13`:
+
+```bash
     0xc19e60 <char org.sample.strings.DontInlineCharAt::latin1()>:
       movl   0x8(%rdi),%eax         ;; store index into eax (rdi=DontInlineCharAt, 0x8(%rdi)=DontInlineCharAt.charAtIndex)
       leaq   0x69ca88(%r14),%rdi    ;; store byte[] backing String at fixed address into rdi (r14="Latin1 string")
@@ -205,6 +287,30 @@ a0:   movq       0x10(%rsp),%rax
       movl   %eax,0x14(%rsp)
     → callq  java.lang.RuntimeException* jdk.internal.util.Preconditions::outOfBoundsCheckIndex(java.util.function.BiFunction*, int, int)
 ```
+
+In GraalVM CE, we observe that the `len` field is extracted from the `byte[]` (in position 12 (`0xc`) as per the struct for byte[]),
+and if the index parameter is bigger than the length it jumps to section that produces an out of bounds runtime exception:
+
+```bash
+char java.lang.StringLatin1::charAt(byte[]*, int)() /home/g/src/fibula-show/2510-graalvm-summit/target/benchmarks
+Percent      0x72c480 <char java.lang.StringLatin1::charAt(byte[]*, int)>:
+      movl    0xc(%rdi),%edx         ;; edx = value.length (rdi=byte[] value, 0xc=len position in byte[] struct)
+      cmpl    %esi,%edx              ;; index >= value.length? (edx=value.length, esi=index)
+    ↓ jbe     59     
+      movzbl  0x10(%rdi,%rax),%edx
+59:   movq    %rdi,0x8(%rsp)
+      nop            
+      movq    %rcx,%rdi
+      movl    %esi,%ecx
+      movl    %ecx,0x14(%rsp)
+    → callq   java.lang.RuntimeException* jdk.internal.util.Preconditions::outOfBoundsCheckIndex(java.util.function.BiFunction*, int, int)
+```
+
+### Latin1 Check
+
+TODO
+
+## PGO
 
 What numbers do we obtain if we use PGO with `DontInlineCharAt`?
 
