@@ -413,7 +413,7 @@ How does PGO achieve this improvement?
 The inlining in `DontInlineCharAt::latin1` looks the same,
 but PGO has discovered that `latin1` is called a lot within a loop,
 so it decided to unroll the calls.
-One clear benefit of unrolling is less instruction jumps.
+One clear benefit of unrolling is fewer branches being taken.
 
 ```bash
      0x480ae0 <org.openjdk.jmh.results.BenchmarkTaskResult* org.sample.strings.jmh_generated.DontInlineCharAt_latin1_jmhTest::latin1_AverageTime%%H7(org.openjdk.jmh.runner.InfraControl*, org.openjdk.jmh.infra.ThreadParams*)>:
@@ -491,7 +491,9 @@ One clear benefit of unrolling is less instruction jumps.
   movzbl 0x8(%rdi,%rax),%eax    ;; computes `value[index] & 0xff` (rdi=byte[] value, rax=int index)
 ```
 
-To finish up, how does HotSpot JIT compare with PGO?
+## HotSpot
+
+What about HotSpot? How does it perform?
 
 ```bash
 # JMH version: fibula:999-SNAPSHOT
@@ -515,7 +517,8 @@ DontInlineCharAt.latin1  avgt    5  1.600 ± 0.009  ns/op # Oracle GraalVM 25 PG
 
 A HotSpot run with `perfasm` gives us some clues on how things differ.
 Compared with PGO, there's no unrolling of the loop in HotSpot.
-HotSpot also has additional assembly to deal with safepoints and deoptimizations:
+HotSpot also has additional assembly to deal with safepoints and deoptimizations.
+Per iteration, more instructions needed to be executed and lack of unrolling means there's no amortization of some of those costs.
 
 ```bash
 Compiled method (c2) 1952 1044       4       org.sample.strings.jmh_generated.DontInlineCharAt_latin1_jmhTest::latin1_avgt_jmhStub (57 bytes)
@@ -532,9 +535,21 @@ Compiled method (c2) 1952 1044       4       org.sample.strings.jmh_generated.Do
 ```
 
 Similar to non-PGO Oracle GraalVM 25, it has inlined calls all the way, but there are considerable differences.
-HotSpot doesn't just compare the index with the constant 13.
-Instead, it queries the array length of the byte[] and compares that with the index.
-Also, we observe that the coder field is checked to see if the String is latin1 or not,
+HotSpot doesn't just compare the index with the constant `13`.
+Instead, it queries the array length of the `byte[]` and compares that with the index:
+Also, we observe that the coder field is checked to see if the `String` is latin1 or not,
 but this check does not appear in either the PGO or the non-PGO Oracle GraalVM runs:
 
-TODO refine coder...
+```bash
+Compiled method (c2) 953 1008       4       org.sample.strings.DontInlineCharAt::latin1 (12 bytes)
+  mov    0x10(%rsi),%r10d             ; load strLatin1 String field into r10
+  movsbl 0x10(%r12,%r10,8),%r9d       ; extract strLatin1.coder byte into r9
+  test   %r9d,%r9d                    ; coder != 0?
+  jne    0x00007fe370c2db50           ; jump to deal with utf16 string (not taken)
+  mov    0x14(%r12,%r10,8),%r10d      ; extract strLatin1.value byte[] to r10
+  mov    0xc(%r12,%r10,8),%ebp        ; extract byte[] length to ebp
+  cmp    %ebp,%r11d                   ; index >= length? (ebp=byte[] length, r11=int index)
+  jae    0x00007fe370c2daef           ; jump to deal with out of bounds
+  shl    $0x3,%r10
+  movzbl 0x10(%r10,%r11,1),%eax       ; computes `value[index] & 0xff` (r10=byte[] value, r11=int index)
+```
