@@ -268,7 +268,6 @@ In Oracle GraalVM we can verify that the top level inlining into the JMH generat
 but further down the aggressive inlining happens:
 
 ```bash
-```bash
     0xc1f460 <void org.sample.strings.jmh_generated.DontInlineCharAt_latin1_jmhTest::latin1_avgt_jmhStub(org.openjdk.jmh.runner.InfraControl*, org.openjdk.jmh.results.RawResults*, org.openjdk.jmh.infra.BenchmarkParams*, org.openjdk.jmh.infra.IterationParams*, org.openjdk.jmh.infra.ThreadParams*, org.openjdk.jmh.infra.Blackhole*, org.openjdk.jmh.infra.Control*, org.sample.strings.jmh_generated.DontInlineCharAt_jmhType*)>:
 a0:   movq       0x10(%rsp),%rax
       movq       %rax,%rdi
