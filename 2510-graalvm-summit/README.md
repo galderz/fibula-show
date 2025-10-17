@@ -60,6 +60,19 @@ class StringLatin1
 }
 ```
 
+The `checkIndex` implementation delegates to `Preconditions.checkIndex` whose implementation is:
+
+```java
+@IntrinsicCandidate
+public static <X extends RuntimeException>
+int checkIndex(int index, int length,
+               BiFunction<String, List<Number>, X> oobef) {
+    if (index < 0 || index >= length)
+        throw outOfBoundsCheckIndex(oobef, index, length);
+    return index;
+}
+```
+
 Generated JMH source code:
 ```java
 class CharAt_latin1_jmhTest
@@ -296,10 +309,10 @@ char java.lang.StringLatin1::charAt(byte[]*, int)() /home/g/src/fibula-show/2510
 Percent      0x72c480 <char java.lang.StringLatin1::charAt(byte[]*, int)>:
       movl    0xc(%rdi),%edx         ;; edx = value.length (rdi=byte[] value, 0xc=len position in byte[] struct)
       cmpl    %esi,%edx              ;; index >= value.length? (edx=value.length, esi=index)
-    ↓ jbe     59     
+    ↓ jbe     59
       movzbl  0x10(%rdi,%rax),%edx
 59:   movq    %rdi,0x8(%rsp)
-      nop            
+      nop
       movq    %rcx,%rdi
       movl    %esi,%ecx
       movl    %ecx,0x14(%rsp)
@@ -308,7 +321,28 @@ Percent      0x72c480 <char java.lang.StringLatin1::charAt(byte[]*, int)>:
 
 ### Latin1 Check
 
-TODO
+In the GraalVM CE assembly we can observe how the `String.coder` field is checked to see if the String is latin1 or not:
+
+```bash
+Percent      0x714960 <char java.lang.String::charAt(int)>:
+      cmpb   $0x0,0x14(%rdi)    ;; coder == 0? (rdi=String, 0x14=coder position in String struct)
+    ↓ je     5b                 ;; jump to 5b if coder == 0 (isLatin1 == true)
+      nop
+      nop
+      nop
+      movl   %esi,%edi
+      movl   %esi,0x14(%rsp)
+      movq   %rax,%rsi
+      movq   %rax,0x8(%rsp)
+    → callq  void java.lang.StringUTF16::checkIndex(int, byte[]*)
+5b:   movq   %rax,%rcx
+      movl   %esi,0x14(%rsp)
+      nop
+      movq   %rcx,%rdi
+    → callq  char java.lang.StringLatin1::charAt(byte[]*, int)
+```
+
+No such check can be found in the Oracle GraalVM assembly code.
 
 ## PGO
 
