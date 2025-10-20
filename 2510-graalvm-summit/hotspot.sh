@@ -18,4 +18,4 @@ JAVA_HOME=$java_home $mvn clean package -Djvm.mode | tee $dir/mvn-package.log
 $java -jar target/benchmarks.jar org.sample.strings.$benchmark | tee $dir/benchmark.log
 $java -jar target/benchmarks.jar org.sample.strings.$benchmark -prof perfasm:hotThreshold=0.001 | tee $dir/perfasm.log
 $java -jar target/benchmarks.jar org.sample.strings.$benchmark -XX:+UnlockDiagnosticVMOptions -jvmArgs -XX:CompileCommand=print,org.sample.strings.*::* | tee $dir/assembly-release.log
-$fastjava -jar target/benchmarks.jar org.sample.strings.$benchmark -jvmArgs -XX:+UnlockDiagnosticVMOptions -jvmArgs -XX:CompileCommand=print,org.sample.strings.*::* | tee $dir/assembly-fastdebug.log
+$fast_java -jar target/benchmarks.jar org.sample.strings.$benchmark -jvmArgs -XX:+UnlockDiagnosticVMOptions -jvmArgs -XX:CompileCommand=print,org.sample.strings.*::* | tee $dir/assembly-fastdebug.log
