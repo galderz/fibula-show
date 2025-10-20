@@ -6,7 +6,7 @@ benchmark=$1
 java_name="java-25"
 
 dir="logs/hotspot-$java_name-$benchmark"
-fast_java_home="$HOME/src/jdk/build/$java_name-linux-x86_64/jdk"
+fast_java_home="$HOME/src/jdk/build/fast-linux-x86_64/jdk"
 fast_java="$fast_java_home/bin/java"
 java_home="$HOME/opt/$java_name"
 java="$java_home/bin/java"
