@@ -132,6 +132,9 @@ What makes Oracle GraalVM faster?
 ### Structs
 
 There are differences in the structs that GraalVM CE and Oracle GraalVM use.
+GraalVM CE has isolates in use and so it uses 8 byte offsets,
+whereas Oracle GraalVM uses 4 byte offsets with no isolate support.
+
 Although these differences do not explain the performance difference,
 they will be useful guide for further analysis.
 Below can be found the struct definitions for `org.sample.strings.CharAt` and `java.lang.String` classes.
