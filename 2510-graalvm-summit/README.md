@@ -1,5 +1,9 @@
 # Native Benchmarking with JMH
 
+Follow up to the
+["Unpick performance mysteries benchmarking GraalVM native executables" FOSDEM 2025](https://archive.fosdem.org/2025/schedule/event/fosdem-2025-5335-unpick-performance-mysteries-benchmarking-graalvm-native-executables/)
+talk.
+
 ## Source Code
 
 Base `CharAt` benchmark:
