@@ -14,7 +14,6 @@ stable.mkShell {
     git
     maven
     pahole
-    perf-tools
     zsh
   ] ++ [
     unstable.graalvmPackages.graalvm-ce
