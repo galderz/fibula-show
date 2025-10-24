@@ -9,7 +9,7 @@ let
     };
 in
 stable.mkShell {
-  pakages = with stable; [
+  packages = with stable; [
     gdb
     git
     maven
