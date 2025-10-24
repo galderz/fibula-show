@@ -22,7 +22,7 @@ stable.mkShell {
 
   GRAALVM_EE_HOME="${unstable.graalvmPackages.graalvm-oracle}";
   JAVA_HOME="${unstable.graalvmPackages.graalvm-ce}";
-  JDK25_HOME="${pkgs.graalvmPackages.graalvm-ce}";
+  JDK25_HOME="${unstable.temurin-bin-25}";
   MAVEN_HOME="${stable.maven}";
   NATIVE_IMAGE_OPTIONS="-H:-CheckToolchain";
 
