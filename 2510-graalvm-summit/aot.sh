@@ -7,8 +7,7 @@ benchmark=$1
 java_name=$2
 
 dir="logs/$java_name-$benchmark"
-java_home="${JAVA_HOME:-$HOME/opt/$java_name}"
-java="$java_home/bin/java"
+java="$JAVA_HOME/bin/java"
 maven_home="${MAVEN_HOME:-$HOME/opt/maven}"
 mvn="$maven_home/bin/mvn"
 
