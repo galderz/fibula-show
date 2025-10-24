@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -ex
+set -Eeuox pipefail
+trap 'echo "error on line $LINENO"; exit 1' ERR
 
 benchmark=$1
 java_name="fast"
