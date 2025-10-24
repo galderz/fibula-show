@@ -10,9 +10,11 @@ let
 in
 stable.mkShell {
   pakages = with stable; [
+    gdb
     git
     maven
     pahole
+    perf
     zsh
   ] ++ [
     unstable.graalvmPackages.graalvm-ce
