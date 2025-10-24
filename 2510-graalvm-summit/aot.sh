@@ -10,7 +10,7 @@ dir="logs/$java_name-$benchmark"
 java_home="${JAVA_HOME:-$HOME/opt/$java_name}"
 java="$java_home/bin/java"
 maven_home="${MAVEN_HOME:-$HOME/opt/maven}"
-mvn="$maven_home/opt/maven/bin/mvn"
+mvn="$maven_home/bin/mvn"
 
 mkdir -p $dir
 
