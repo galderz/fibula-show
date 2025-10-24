@@ -7,7 +7,7 @@ benchmark=$1
 java_name="ee-graalvm-25"
 
 dir="logs/pgo-$java_name-$benchmark"
-java_home="${GRAAL_EE_HOME:-$HOME/opt/$java_name}"
+java_home="${GRAALVM_EE_HOME:-$HOME/opt/$java_name}"
 java="$java_home/bin/java"
 maven_home="${MAVEN_HOME:-$HOME/opt/maven}"
 mvn="$maven_home/bin/mvn"
