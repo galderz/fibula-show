@@ -8,9 +8,10 @@ java_name="java-25"
 dir="logs/hotspot-$java_name-$benchmark"
 fast_java_home="$HOME/src/jdk/build/fast-linux-x86_64/jdk"
 fast_java="$fast_java_home/bin/java"
-java_home="$HOME/opt/$java_name"
+java_home="${JDK25_HOME:-$HOME/opt/$java_name}"
 java="$java_home/bin/java"
-mvn="$HOME/opt/maven/bin/mvn"
+maven_home="${MAVEN_HOME:-$HOME/opt/maven}"
+mvn="$maven_home/opt/maven/bin/mvn"
 
 mkdir -p $dir
 
