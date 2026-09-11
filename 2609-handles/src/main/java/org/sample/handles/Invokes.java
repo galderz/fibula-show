@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 10, time = 500, timeUnit = TimeUnit.MILLISECONDS)
 @Measurement(iterations = 5, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
 @Fork(1)
-public class ReflectionInvoke
+public class Invokes
 {
     MyValue value;
     Field field;
@@ -34,7 +34,7 @@ public class ReflectionInvoke
     }
 
     @Benchmark
-    public String getField() throws IllegalAccessException
+    public String reflectInvokeGetField() throws IllegalAccessException
     {
         return (String) field.get(value);
     }
