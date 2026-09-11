@@ -132,8 +132,7 @@ What makes Oracle GraalVM faster?
 ### Structs
 
 There are differences in the structs that GraalVM CE and Oracle GraalVM use.
-GraalVM CE has isolates in use and so it uses 8 byte offsets,
-whereas Oracle GraalVM uses 4 byte offsets with no isolate support.
+This is due to differences in the way compressed ops are implemented.
 
 Although these differences do not explain the performance difference,
 they will be useful guide for further analysis.
@@ -523,14 +522,14 @@ DontInlineCharAt.latin1  avgt    5  1.600 ± 0.009  ns/op # Oracle GraalVM 25 PG
 
 A HotSpot run with `perfasm` gives us some clues on how things differ.
 Compared with PGO, there's no unrolling of the loop in HotSpot.
-HotSpot also has additional assembly to deal with safepoints and deoptimizations.
+HotSpot also has additional assembly to deal with safepoints and `nopl` on the returned value (blackhole?).
 Per iteration, more instructions needed to be executed and lack of unrolling means there's no amortization of some of those costs.
 
 ```bash
 Compiled method (c2) 1952 1044       4       org.sample.strings.jmh_generated.DontInlineCharAt_latin1_jmhTest::latin1_avgt_jmhStub (57 bytes)
 ↗  90:   mov    0x38(%rsp),%rsi              ; load the DontInlineCharAt obj instance
 |        call   0x00007fe37052eae0           ; invoke obj.latin1()
-|        nopl   0x1000194(%rax,%rax,1)       ; post call nop (for deoptimization?)
+|        nopl   0x1000194(%rax,%rax,1)       ; rax contains the value returned (blakhole? or patching/deopt?)
 |        mov    (%rsp),%r10
 |        movzbl 0x120(%r10),%r10d            ; load isDone into r10d
 |        mov    0x30(%r15),%r11              ; load safepoint polling page pointer to r11
@@ -558,4 +557,117 @@ Compiled method (c2) 953 1008       4       org.sample.strings.DontInlineCharAt:
   jae    0x00007fe370c2daef           ; jump to deal with out of bounds
   shl    $0x3,%r10
   movzbl 0x10(%r10,%r11,1),%eax       ; computes `value[index] & 0xff` (r10=byte[] value, r11=int index)
+```
+
+## Load From Array
+
+What happens if instead of using the constant directly,
+we force loading the constant from an array?
+E.g.
+
+```java
+public class LoadArrayCharAt
+{
+    private String[] values;
+    private int charAtIndex;
+
+    @Setup
+    public void setup()
+    {
+        values = new String[1];
+        values[0] = "Latin1 string";
+        charAtIndex = 3;
+    }
+
+    @Benchmark
+    @CompilerControl(DONT_INLINE)
+    public char latin1()
+    {
+        final String strLatin1 = values[0];
+        return strLatin1.charAt(charAtIndex);
+    }
+}
+```
+
+The results don't change much for GraalVM CE or HotSpot,
+but Oracle GraalVM in both PGO and non-PGO versions have slowed down noticeably:
+```bash
+Benchmark               Mode  Cnt  Score   Error  Units
+LoadArrayCharAt.latin1  avgt    5  4.579 ± 0.021  ns/op # GraalVM CE 25
+LoadArrayCharAt.latin1  avgt    5  4.066 ± 0.028  ns/op # HotSpot JIT
+LoadArrayCharAt.latin1  avgt    5  2.984 ± 0.021  ns/op # Oracle GraalVM 25
+LoadArrayCharAt.latin1  avgt    5  2.870 ± 0.019  ns/op # Oracle GraalVM 25 PGO
+```
+
+Oracle GraalVM is no longer assuming the String is `Latin1` and skipping the `UTF-16` part.
+We can now observe how the `coder` to choose how to decode the char,
+and we also observe `byte[]` length checks rather than assuming a constant:
+
+```bash
+0xc19f00 <char org.sample.strings.LoadArrayCharAt::latin1()>:
+       cmpb   $0x0,0xc(%r14,%rax,8)  ;; coder == 0? (0xc=coder position in String struct)
+     ↓ jne    98
+       movl   0x4(%r14,%rdi,8),%edx  ;; extract length into edx (0x4=len position in byte[] struct)
+       cmpl   %ecx,%edx              ;; out of bounds check
+     ↓ jbe    106
+       movzbl 0x8(%rbx,%rcx),%eax
+ 98:   nop                           ;; utf-16 branch
+       movl   0x4(%r14,%rdi,8),%eax  ;; extract length into edx (0x4=len position in byte[] struct)
+       shrl   %eax
+       cmpl   %ecx,%eax              ;; out of bounds check
+     ↓ jbe    12c
+       shll   %ecx
+       movzwl 0x8(%rbx,%rcx),%eax
+106:   leaq   0x813938(%r14),%rdi
+       nop
+       movl   %ecx,%esi
+     → callq  java.lang.RuntimeException* jdk.internal.util.Preconditions::outOfBoundsCheckIndex(java.util.function.BiFunction*, int, int)
+12c:   leaq   0x813938(%r14),%rdi
+       nop
+       movl   %ecx,%esi
+       movl   %eax,%edx
+     → callq  java.lang.RuntimeException* jdk.internal.util.Preconditions::outOfBoundsCheckIndex(java.util.function.BiFunction*, int, int)
+```
+
+In PGO mode we still observe unrolling,
+but that's no longer offering the same kind of advantage compared with non-PGO.
+It looks that as the code being called from the inner JMH loop becomes more complex,
+the benefits of the unrolling diminish.
+
+We see similar looking assembly in HotSpot,
+but the calculations are more complex due to compressed oops.
+In the assembly below, `r12` is the heap base and `r11` is the 32-bit narrow oop to the `String` object.
+So, `(%r12,%r11,8)` gives us the decoded 64-bit object address of the String.
+Another interesting thing below is te difference between `r9d` and `r10`.
+`r9d` holds the compressed oop (a 32-bit narrow reference) to the `byte[]` backing array: it’s not a usable native pointer by itself.
+This is used to load the `length` of the `byte[]`.
+Then, `%r10` holds the decoded 64-bit native address of that `byte[]` object: i.e., an actual pointer you can index from.
+This is used for element access.
+
+```bash
+Compiled method (c2) 944 1009       4       org.sample.strings.LoadArrayCharAt::latin1 (16 bytes)
+  45:   movsbl 0x10(%r12,%r11,8),%ebp       ;; ebp = field String.coder (byte)
+  4b:   test   %ebp,%ebp                    ;; coder == 0?
+  4d:   jne    d8
+  53:   mov    0x14(%r12,%r11,8),%r9d       ;; r9d = oop byte[] (String.value) for length check
+  58:   mov    0xc(%r12,%r9,8),%r11d        ;; r11d = byte[].length
+  5d:   cmp    %r11d,%r8d                   ;; out of bounds check
+  60:   jae    81
+  62:   cmp    %r11d,%r8d                   ;; another out of bounds check??
+  65:   jae    a0
+  67:   lea    (%r12,%r9,8),%r10            ;; r10 = oop byte[] (String.value) for element access
+  6b:   movzbl 0x10(%r10,%r8,1),%eax        ;; computes `value[index] & 0xff` (r10=byte[] value, r8=int index)
+```
+
+Blackhole consumption of the `char` value returned by the `latin1()` looks suspicious.
+The return value should be on `rax` but that value is not used:
+
+```bash
+0xc223e0 <void org.sample.strings.jmh_generated.LoadArrayCharAt_latin1_jmhTest::latin1_avgt_jmhStub(org.openjdk.jmh.runner.InfraControl*, org.openjdk.jmh.results.RawResults*, org.openjdk.jmh.infra.BenchmarkParams*, org.openjdk.jmh.infra.IterationParams*, org.openjdk.jmh.infra.ThreadParams*, org.openjdk.jmh.infra.Blackhole*, org.openjdk.jmh.infra.Control*, org.sample.strings.jmh_generated.LoadArrayCharAt_jmhType*)>:
+a0:   movq       0x10(%rsp),%rax
+      movq       %rax,%rdi
+    → callq      char org.sample.strings.LoadArrayCharAt::latin1()
+      movq       0x30(%rsp),%rax
+      incq       %rax
+    ↑ jmp        a0
 ```
