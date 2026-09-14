@@ -3,6 +3,7 @@ package org.sample.handles;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.GroupThreads;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
@@ -22,25 +23,36 @@ import java.util.concurrent.TimeUnit;
 @Fork(1)
 public class Invokes
 {
-    MyValue value;
+    Object value;
     Field field;
+
+    // Method Handles
+    GetterHolder accessor;
 
     @Setup
     public void setup() throws NoSuchFieldException
     {
-        field = MyValue.class.getDeclaredField("name");
+        field = MyValue.class.getDeclaredField("age");
         value = new MyValue();
-        value.name = "my-name";
+        ((MyValue) value).age = 42;
+
+        accessor = new GetterHolder(field);
     }
 
     @Benchmark
-    public String reflectInvokeGetField() throws IllegalAccessException
+    public int reflectInvokeGetField() throws IllegalAccessException
     {
-        return (String) field.get(value);
+        return (int) field.get(value);
+    }
+
+    @Benchmark
+    public Object mhandleInvokeGetField() throws Throwable
+    {
+        return accessor.get().invokeExact(value);
     }
 
     private static class MyValue
     {
-        public String name;
+        public int age;
     }
 }
