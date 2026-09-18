@@ -15,8 +15,6 @@
  */
 package org.sample.handles;
 
-import io.netty.util.internal.StringUtil;
-
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
