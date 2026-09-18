@@ -44,6 +44,9 @@ public class NettyByteArrays
         index = 0;
     }
 
+    /**
+     * Mimic Netty's VarHandleByteBufferAccess.getLongLE()
+     */
     @Benchmark
     public long vhandleGetLongLE()
     {
