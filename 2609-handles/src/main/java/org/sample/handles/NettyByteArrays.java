@@ -52,4 +52,17 @@ public class NettyByteArrays
     {
         return (long) PlatformDependent.longLeArrayView().get(b, index);
     }
+
+    @Benchmark
+    public long plainGetLongLE()
+    {
+        return ((long) b[index] & 0xFF) |
+            ((long) b[index + 1] & 0xFF) << 8 |
+            ((long) b[index + 2] & 0xFF) << 16 |
+            ((long) b[index + 3] & 0xFF) << 24 |
+            ((long) b[index + 4] & 0xFF) << 32 |
+            ((long) b[index + 5] & 0xFF) << 40 |
+            ((long) b[index + 6] & 0xFF) << 48 |
+            ((long) b[index + 7] & 0xFF) << 56;
+    }
 }
