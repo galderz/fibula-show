@@ -12,6 +12,11 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.VarHandle;
+import java.nio.ByteOrder;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -44,15 +49,6 @@ public class NettyByteArrays
         index = 0;
     }
 
-    /**
-     * Mimic Netty's VarHandleByteBufferAccess.getLongLE()
-     */
-    @Benchmark
-    public long vhandleGetLongLE()
-    {
-        return (long) PlatformDependent.longLeArrayView().get(b, index);
-    }
-
     @Benchmark
     public long plainGetLongLE()
     {
@@ -65,4 +61,95 @@ public class NettyByteArrays
             ((long) b[index + 6] & 0xFF) << 48 |
             ((long) b[index + 7] & 0xFF) << 56;
     }
+
+    private static final boolean VAR_HANDLE;
+    private static final VarHandle LONG_LE_ARRAY_VIEW;
+
+    static
+    {
+        VAR_HANDLE = initializeVarHandle();
+
+        VarHandle longLeArrayViewHandle = null;
+        try
+        {
+            MethodHandles.Lookup lookup = MethodHandles.lookup();
+            MethodHandle byteArrayViewHandle = lookup.findStatic(
+                MethodHandles.class
+                , "byteArrayViewVarHandle"
+                , MethodType.methodType(VarHandle.class, Class.class, ByteOrder.class)
+            );
+
+            longLeArrayViewHandle = (VarHandle) byteArrayViewHandle.invokeExact(long[].class, ByteOrder.LITTLE_ENDIAN);
+        }
+        catch (Throwable e)
+        {
+            longLeArrayViewHandle = null;
+        }
+        finally
+        {
+            LONG_LE_ARRAY_VIEW = longLeArrayViewHandle;
+        }
+    }
+
+    @Benchmark
+    public long vhandleGetLongLE()
+    {
+        VarHandle vh = null;
+        if (VAR_HANDLE) {
+            vh = LONG_LE_ARRAY_VIEW;
+        }
+
+        return (long) vh.get(b, index);
+    }
+
+    private static boolean initializeVarHandle()
+    {
+        if (javaVersion0() < 9) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static int javaVersion0()
+    {
+        final int majorVersion;
+        majorVersion = majorVersionFromJavaSpecificationVersion();
+        System.out.println("Java version: " + majorVersion);
+        return majorVersion;
+    }
+
+    private static int majorVersionFromJavaSpecificationVersion()
+    {
+        return majorVersion(SystemPropertyUtil.get("java.specification.version", "1.6"));
+    }
+
+    private static int majorVersion(final String javaSpecVersion)
+    {
+        final String[] components = javaSpecVersion.split("\\.");
+        final int[] version = new int[components.length];
+        for (int i = 0; i < components.length; i++)
+        {
+            version[i] = Integer.parseInt(components[i]);
+        }
+
+        if (version[0] == 1)
+        {
+            assert version[1] >= 6;
+            return version[1];
+        }
+        else
+        {
+            return version[0];
+        }
+    }
+
+//    /**
+//     * Mimic Netty's VarHandleByteBufferAccess.getLongLE()
+//     */
+//    @Benchmark
+//    public long vhandleGetLongLE()
+//    {
+//        return (long) PlatformDependent.longLeArrayView().get(b, index);
+//    }
 }
