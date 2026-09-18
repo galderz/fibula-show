@@ -48,6 +48,10 @@ public final class PlatformDependent {
         return PlatformDependent0.javaVersion();
     }
 
+    public static void throwException(Throwable t) {
+        PlatformDependent0.throwException(t);
+    }
+
     public static VarHandle longLeArrayView() {
         if (VAR_HANDLE) {
             return VarHandleFactory.longLeArrayView();
