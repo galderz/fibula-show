@@ -93,5 +93,4 @@ public class VanillaByteArrays
             ((long) b[index + 6] & 0xFF) << 48 |
             ((long) b[index + 7] & 0xFF) << 56;
     }
-
 }
