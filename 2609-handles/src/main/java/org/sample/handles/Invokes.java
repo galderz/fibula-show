@@ -32,7 +32,8 @@ public class Invokes
     Field field;
 
     // Method Handles
-    GetterHolder accessor;
+    static final MethodType GETTER_TYPE = methodType(Object.class, Object.class);
+    volatile MethodHandle _accessor;
 
     @Setup
     public void setup() throws NoSuchFieldException
@@ -40,8 +41,6 @@ public class Invokes
         field = MyValue.class.getDeclaredField("age");
         value = new MyValue();
         ((MyValue) value).age = 42;
-
-        accessor = new GetterHolder(field);
     }
 
     @Benchmark
@@ -53,7 +52,9 @@ public class Invokes
     @Benchmark
     public Object mhandleInvokeGetField() throws Throwable
     {
-        return accessor.get().invokeExact(value);
+        // Replicate code as shown in latest Jackson 3.x:
+        // https://github.com/FasterXML/jackson-databind/blob/4f153f09eb5b3970384678068ea2d97c3087755a/src/main/java/tools/jackson/databind/ser/BeanPropertyWriter.java
+        return _accessorHandle().invokeExact(value);
     }
 
     private static class MyValue
@@ -61,80 +62,29 @@ public class Invokes
         public int age;
     }
 
-    class GetterHolder extends UnreflectHandleSupplier {
-        Field field;
-
-        public GetterHolder(Field field) {
-            super(methodType(Object.class, Object.class));
-            this.field = field;
+    private MethodHandle _accessorHandle() throws IllegalAccessException {
+        MethodHandle h = _accessor;
+        if (h == null) {
+            h = _unreflectAccessor();
+            _accessor = h;
         }
+        return h;
+    }
 
-        @Override
-        protected MethodHandle unreflect() throws IllegalAccessException {
-            return MethodHandles.lookup().unreflectGetter(field);
+    private MethodHandle _unreflectAccessor() throws IllegalAccessException {
+        final MethodHandle h = MethodHandles.lookup().unreflectGetter(field);
+        return h.asType(GETTER_TYPE);
 
+//        MethodHandle h;
 //        if (_member instanceof AnnotatedField) {
-//            return MethodHandles.lookup().unreflectGetter((Field) _member.getMember());
+//            h = MethodHandles.lookup().unreflectGetter((Field) _member.getMember());
 //        } else if (_member instanceof AnnotatedMethod method) {
-//            return MethodHandles.lookup().unreflect(method.getMember());
+//            h = MethodHandles.lookup().unreflect(method.getMember());
 //        } else {
 //            // 01-Dec-2014, tatu: Used to be illegal, but now explicitly allowed
 //            // for virtual props
 //            return null;
 //        }
-        }
-    }
-
-    public static abstract class UnreflectHandleSupplier implements Supplier<MethodHandle> {
-        private final MethodType asType;
-        private volatile MethodHandle cachedHandle;
-
-        public UnreflectHandleSupplier(MethodType asType) {
-            this.asType = asType;
-        }
-
-        @Override
-        public MethodHandle get() {
-            MethodHandle h = cachedHandle;
-            if (h == null) {
-                h = initialize();
-            }
-            return h;
-        }
-
-        private synchronized MethodHandle initialize() {
-            MethodHandle h = cachedHandle;
-            if (h == null) {
-                try {
-                    h = postprocess(unreflect());
-                } catch (IllegalAccessException e) {
-                    throw sneakyThrow(e);
-                }
-                cachedHandle = h;
-            }
-            return h;
-        }
-
-        protected MethodHandle postprocess(MethodHandle mh) {
-            if (mh == null) {
-                return mh;
-            }
-            if (asType == null) {
-                return mh.asFixedArity();
-            }
-            return mh.asType(asType);
-        }
-
-        protected abstract MethodHandle unreflect() throws IllegalAccessException;
-
-        @Override
-        public String toString() {
-            return get().toString();
-        }
-
-        @SuppressWarnings("unchecked")
-        public static <E extends Throwable> RuntimeException sneakyThrow(Throwable throwable) throws E {
-            throw (E) throwable;
-        }
+//        return h.asType(GETTER_TYPE);
     }
 }
